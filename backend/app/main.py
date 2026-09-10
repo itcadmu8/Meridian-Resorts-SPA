@@ -1,32 +1,13 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import Base, engine
-from app.routers import availability, folios, guests, reservations
-from app.seed import seed_if_empty
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if not settings.testing:
-        Base.metadata.create_all(bind=engine)
-        if settings.seed_on_startup:
-            seed_if_empty()
-    yield
-
+from app.routes import reservations
 
 app = FastAPI(
-    title="Meridian Hospitality Group API",
-    description=(
-        "Shared starter baseline API (Section 2 of the ADM case study). "
-        "Extend with your team's vertical-specific entities/endpoints per your brief "
-        "(Section 4) rather than redesigning what's here."
-    ),
+    title="Meridian Resorts & Spa API",
+    description="Operations dashboard backend for Meridian Resorts & Spa.",
     version="0.1.0",
-    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -38,9 +19,6 @@ app.add_middleware(
 )
 
 app.include_router(reservations.router)
-app.include_router(guests.router)
-app.include_router(folios.router)
-app.include_router(availability.router)
 
 
 @app.get("/health", tags=["health"])
