@@ -1,0 +1,1 @@
+// AI chat widget UI test placeholder.

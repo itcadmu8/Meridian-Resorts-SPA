@@ -1,144 +1,271 @@
-# Meridian Hospitality Group — Shared Starter Baseline
+# Meridian Resorts & Spa
 
-This is the shared starter baseline described in **Section 2** of the ADM Training
-Case Study: the common foundation all five Meridian Hospitality Group cohort teams
-(The Aldwyn House, Meridian Resorts & Spa, Meridian Kitchens Collective, Meridian
-Stays, Meridian Residences) build on from Day 10 onward.
+Meridian Resorts & Spa is Team 2's multi-property hospitality operations project.
+It supports six resort properties and will provide a unified guest experience
+alongside a staff operations console for arrivals, spa activity, and food and
+beverage operations.
 
-It ships the already-agreed data model, REST API contract, and a working Docker /
-docker-compose setup, so no team needs to redesign the core reservation / guest /
-folio system or write container packaging from scratch — extend it with your
-team's vertical-specific entities (Section 4 of your brief) instead.
+The project uses React with JavaScript and JSX on the frontend, and FastAPI on the
+backend. PostgreSQL stores transactional hotel data and MongoDB stores
+semi-structured guest preference documents.
 
-**Frontend note:** the React frontend is intentionally not scaffolded here — it'll
-be built separately against this API.
+## Current project status
 
-## What's included
+The shared core is available and ready for team development. It includes Docker
+services, seeded six-property data, baseline reservation APIs, and a React/Vite
+frontend shell.
 
-- FastAPI REST API implementing the 6 baseline endpoints (Section 2.3)
-- PostgreSQL for transactional data (Guest, Property, RatePlan, Reservation, Folio, Order)
-- MongoDB for semi-structured guest preference documents
-- docker-compose wiring Postgres + Mongo + the API together, with a seed script for demo data
-- A pytest suite (SQLite-backed, no Docker needed) as a pattern for the CI/CD build → lint → test gates in the Final Sprint
-- Dependencies managed by [uv](https://docs.astral.sh/uv/) — `pyproject.toml` + a committed `uv.lock`, no `requirements.txt`
+The following Team 2 features are planned for implementation:
 
-## Quickstart
+- Staff authentication and protected operations pages.
+- Cross-property arrivals, spa, F&B, and dashboard workflows.
+- Spa appointments, multi-property inventory, and upsell offers.
+- Guest-facing RAG assistant grounded in approved spa and dining documents.
+- Spa booking agent with an explicit guest confirmation gate.
+- UiPath nightly F&B covers versus expected occupancy reconciliation.
+- CI/CD, monitoring, AWS EC2, and Azure App Service deployment.
+
+## Architecture
+
+```text
+React + Vite frontend
+        |
+        v
+FastAPI REST API (/api/v1)
+        |
+        +-- PostgreSQL: guests, properties, reservations, rate plans, folios, orders
+        +-- MongoDB: guest preference documents
+        +-- Meridian knowledge base: approved spa, dining, and hours documents
+```
+
+The dashboard must derive cross-property activity from operational data. It must
+not introduce a duplicate dashboard transaction table.
+
+## Repository layout
+
+```text
+backend/                    FastAPI application, database models, routers, and tests
+frontend/                   React + Vite application written in JavaScript and JSX
+meridian_knowledge/         Property spa, dining, hours, and overview source documents
+automation/uipath/          F&B reconciliation workflow assets and notes
+docker-compose.yml          Local PostgreSQL, MongoDB, backend, and frontend services
+.env.example                Optional local environment overrides
+```
+
+## Prerequisites
+
+- Docker Engine with Docker Compose v2
+- Node.js 22+ and npm for frontend development outside Docker
+- Python 3.12+ and [uv](https://docs.astral.sh/uv/) for backend development outside Docker
+
+## Clone and start
+
+Clone the repository and start the full local stack:
 
 ```bash
-cp .env.example .env
+git clone https://github.com/itcadmu8/Meridian-Resorts-SPA.git
+cd Meridian-Resorts-SPA
 docker compose up --build
 ```
 
-- API: http://localhost:8000 (interactive docs at `/docs`)
-- Health check: http://localhost:8000/health
+After the services are healthy, open:
 
-On first boot the backend auto-creates tables and seeds one demo property, guest,
-reservation, and folio (toggle via `SEED_ON_STARTUP` in `.env`). Re-seed manually
-any time with:
+- Frontend: <http://localhost:5173>
+- API documentation: <http://localhost:8000/docs>
+- Health check: <http://localhost:8000/health>
+
+Stop the local stack with:
+
+```bash
+docker compose down
+```
+
+## Run the application
+
+The committed Compose defaults work without a `.env` file:
+
+```bash
+docker compose up --build
+```
+
+For a detached process:
+
+```bash
+docker compose up --build -d
+docker compose ps
+```
+
+Local services:
+
+- Frontend: <http://localhost:5173>
+- API: <http://localhost:8000>
+- API documentation: <http://localhost:8000/docs>
+- Health check: <http://localhost:8000/health>
+
+View logs or stop the stack:
+
+```bash
+docker compose logs -f
+docker compose down
+```
+
+`docker compose down` preserves local database volumes. Do not use `-v` unless
+you intentionally want to delete all local PostgreSQL and MongoDB data.
+
+### Environment overrides
+
+Create a local environment file only when you need to override ports or database
+settings:
+
+```bash
+cp .env.example .env
+```
+
+Never commit `.env`, passwords, API keys, access tokens, or other secrets.
+
+## Seed data
+
+On its first startup, the backend creates tables and seeds six Meridian Resorts
+& Spa properties with representative guests, reservations, folios, F&B orders,
+and guest preference documents. Seeding is idempotent and controlled by
+`SEED_ON_STARTUP`.
+
+To run the seed command in the backend container:
 
 ```bash
 make seed
-# or: docker compose exec backend python -m app.seed
 ```
 
-## Project structure
+The command seeds only an empty database. To start from scratch, stop the stack
+and explicitly remove volumes before starting it again.
 
-```
-.
-├── backend/
-│   ├── app/
-│   │   ├── main.py          FastAPI app + startup (create tables, seed)
-│   │   ├── config.py        Settings from environment variables
-│   │   ├── database.py      SQLAlchemy engine/session (Postgres)
-│   │   ├── mongo.py         Mongo client (guest preference docs)
-│   │   ├── models.py        SQLAlchemy models — the Core Data Model
-│   │   ├── schemas.py       Pydantic request/response schemas
-│   │   ├── crud.py          DB access functions
-│   │   ├── seed.py          Demo data seeding
-│   │   └── routers/         One file per API resource
-│   ├── tests/                pytest suite (SQLite, no Docker required)
-│   ├── pyproject.toml        Dependencies + dev-dependencies + ruff/pytest config
-│   └── uv.lock                Locked dependency versions (committed — don't hand-edit)
-├── docker-compose.yml        Postgres + Mongo + backend
-└── .env.example               All environment variables, copy to .env
-```
+## Development commands
 
-## Core data model (Section 2.2)
+### Backend
 
-| Entity | Key fields | Notes |
-|---|---|---|
-| Guest | id, name, email, phone, loyalty_tier, created_at | Core guest profile |
-| Property | id, name, brand, address, timezone | A physical hotel / restaurant / unit / building |
-| Reservation | id, guest_id, property_id, check_in, check_out, status, rate_plan_id | Core booking record |
-| RatePlan | id, property_id, name, nightly_rate, cancellation_policy | Pricing rules |
-| Folio | id, reservation_id, line_items[], balance, status | Guest bill / invoice |
-| Order | id, property_id, guest_id (nullable), items[], total, placed_at | F&B order at an outlet |
-
-## API contract (Section 2.3)
-
-| Method & path | Purpose |
-|---|---|
-| `GET /api/v1/reservations` | List/filter by `property_id`, `status`, `date_from`, `date_to` |
-| `GET /api/v1/reservations/{id}` | Reservation + guest + folio detail |
-| `POST /api/v1/reservations` | Create a reservation |
-| `GET /api/v1/guests/{id}` | Guest profile + preference document (Mongo) |
-| `GET /api/v1/folios/{id}` | Folio + line items |
-| `GET /api/v1/availability` | Availability by `property_id` + date range |
-
-This is the contract as agreed — treat it as fixed. If your brief needs more (e.g.
-listing properties, creating guests), add new endpoints rather than changing these.
-
-## Extending for your team's brief
-
-Each brief (Section 4) adds 2–4 vertical-specific entities on top of this baseline
-— e.g. Team 1 (The Aldwyn House) adds `GuestPreferenceProfile`, `ConciergeRequest`,
-`Amenity`. To extend:
-
-1. Add SQLAlchemy models to `backend/app/models.py` (or a new module) and Pydantic
-   schemas to `schemas.py`.
-2. Add a new router under `backend/app/routers/` and register it in `main.py`.
-3. Build your React frontend against the resulting endpoints.
-
-Don't redesign the six existing endpoints or the Docker packaging — build on top.
-
-## Availability endpoint — a note
-
-The Core Data Model has no inventory/capacity entity (that's vertical-specific —
-e.g. Team 2's `MultiPropertyInventory`, Team 4's `UnitListing` calendars).
-`GET /api/v1/availability` therefore ships as a deliberately simple stub: it
-compares reservations booked against a flat `DEFAULT_PROPERTY_CAPACITY` per rate
-plan. Replace this with your brief's real inventory logic in Sprint 2/3.
-
-## Running tests
-
-Dependencies are managed with [uv](https://docs.astral.sh/uv/) — install it once
-([docs](https://docs.astral.sh/uv/getting-started/installation/)), then:
+The backend uses `uv` and has an in-memory SQLite/fake MongoDB test setup, so
+backend tests do not need Docker services running.
 
 ```bash
-cd backend
-uv sync --group dev   # creates backend/.venv from pyproject.toml + uv.lock
+make test
+make lint
+```
+
+Equivalent commands from `backend/`:
+
+```bash
+uv sync --group dev
 uv run pytest
 uv run ruff check app tests
 ```
 
-(`make test` / `make lint` from the repo root do the same thing.) Tests run
-against an in-memory SQLite database and a fake Mongo collection, both swapped in
-via FastAPI dependency overrides — no Postgres/Mongo/Docker required.
+### Frontend
 
-To add or upgrade a dependency: `uv add <package>` (or `uv add --group dev
-<package>` for a dev-only one) from `backend/`, then commit the updated
-`pyproject.toml` and `uv.lock` together. Don't hand-edit `uv.lock`.
+From `frontend/`:
 
-## Stack (Section 2.4)
+```bash
+npm install
+npm run dev
+npm run lint
+npm run build
+```
 
-- Backend: Python (FastAPI) REST API, dependencies managed by uv
-- Databases: PostgreSQL (transactional) + MongoDB (guest preference documents)
-- Frontend: React with hooks + Axios (to be added separately)
-- Packaging: Docker (installs via `uv sync --frozen` from `uv.lock`) + docker-compose
-  (this repo); Sprint 2 adds manual deploys to AWS EC2 and Azure App Service; the
-  Final Sprint automates that into a CI/CD pipeline
+The project does not yet include a frontend test runner. Add one when frontend
+feature tests are implemented.
 
-## Environment variables
+## Current baseline APIs
 
-See `.env.example` for the full list (Postgres/Mongo credentials, `DATABASE_URL`,
-`MONGO_URL`, `SEED_ON_STARTUP`, etc.).
+These implemented endpoints are the shared baseline and should be extended, not
+redesigned:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/v1/reservations` | List or filter reservations by property, status, and date range. |
+| `GET` | `/api/v1/reservations/{id}` | Get a reservation with guest and folio detail. |
+| `POST` | `/api/v1/reservations` | Create a reservation. |
+| `GET` | `/api/v1/guests/{id}` | Get a guest profile and preference document. |
+| `GET` | `/api/v1/folios/{id}` | Get a folio and its line items. |
+| `GET` | `/api/v1/availability` | Check baseline rate-plan availability by property and date range. |
+
+The current availability endpoint uses a flat capacity setting. Team 2 will
+replace this with `MultiPropertyInventory` for real room and spa availability.
+
+The baseline APIs currently return direct Pydantic response models. The Team 2
+contract requires new feature APIs to adopt the agreed response envelope:
+
+```json
+{
+  "success": true,
+  "data": {},
+  "message": null,
+  "meta": { "request_id": "uuid" }
+}
+```
+
+## Team 2 work allocation
+
+| Owner | Sprint 2 scope | Sprint 3 scope |
+| --- | --- | --- |
+| Member 1 | Arrivals page and reservation integration | Authenticated guest/reservation context and access-control tests |
+| Member 2 | Spa schedule and appointment APIs | Spa booking agent, availability, and confirmation gate |
+| Member 3 | F&B operations and order APIs | UiPath nightly covers/occupancy variance workflow |
+| Member 4 | Operations dashboard and six-property aggregation | Guest RAG assistant, AI API/widget integration, final coordination |
+
+## Shared implementation rules
+
+- Use JavaScript and JSX in the frontend. Do not add TypeScript files.
+- Keep JSON fields and API paths in `snake_case` and lowercase plural form.
+- Use UUID primary keys and UTC timestamps.
+- Use the `/api/v1` prefix for all feature endpoints.
+- Pages and components must call domain API modules, not Axios directly.
+- Preserve the shared reservation, guest, folio, and availability contracts.
+- Coordinate before changing shared files, especially `frontend/src/App.jsx`,
+  `frontend/src/api/client.js`, `backend/app/main.py`, `backend/app/config.py`,
+  `backend/app/database.py`, `.env.example`, and `docker-compose.yml`.
+- Do not include guest PII in prompts to coding assistants.
+
+## Team workflow
+
+Start from the latest integrated branch and create a story branch:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git switch -c feature/member2-spa
+```
+
+Use the branch that matches your story ownership. Merge backend contract changes
+before connecting dependent frontend functionality where possible, and run the
+relevant tests, lint checks, and build before opening a pull request.
+
+## Roadmap
+
+### Sprint 2
+
+- Implement staff login and protected routes.
+- Build Arrivals, Spa Schedule, F&B Operations, and Operations Dashboard pages.
+- Add spa appointments, inventory, offers, and the supporting APIs.
+- Connect pages through the shared API client and domain-specific API modules.
+
+### Sprint 3
+
+- Authenticate guest access to the embedded Meridian AI assistant.
+- Ground assistant answers in `meridian_knowledge/` spa and dining documents,
+  returning supporting source paths.
+- Ensure the spa agent checks reservation context and availability, asks for
+  explicit confirmation, creates one appointment only after confirmation, and
+  stops after success or a definitive failure.
+- Build the UiPath nightly F&B reconciliation and variance output.
+
+### Final delivery
+
+- Add CI/CD build, lint, test, and deployment gates. The current GitHub Actions
+  workflow is a placeholder.
+- Configure logging, monitoring, and at least one alert.
+- Deploy to AWS EC2 and Azure App Service Containers.
+- Complete integration, regression, security, and live-demo readiness checks.
+
+## Reference documents
+
+- [Team 2 implementation skeleton plan](plan-meridianContractSkeleton.prompt.md)
+- [F&B reconciliation notes](automation/uipath/fnb_reconciliation/readme.md)

@@ -1,0 +1,1 @@
+// Shared login form placeholder.

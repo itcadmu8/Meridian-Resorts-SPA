@@ -1,0 +1,1 @@
+// Arrivals page placeholder.

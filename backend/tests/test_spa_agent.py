@@ -1,0 +1,1 @@
+"""Spa booking agent test placeholder."""

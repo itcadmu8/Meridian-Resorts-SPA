@@ -1,0 +1,1 @@
+// Guest AI API placeholder.

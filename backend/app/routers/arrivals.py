@@ -1,0 +1,1 @@
+"""Arrivals router placeholder."""

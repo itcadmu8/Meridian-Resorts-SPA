@@ -1,0 +1,1 @@
+// F&B operations UI test placeholder.
