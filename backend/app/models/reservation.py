@@ -16,3 +16,6 @@ class Reservation(Base):
     check_in: Mapped[date] = mapped_column(Date, nullable=False)
     check_out: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
+    room_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    room_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    special_preference: Mapped[str | None] = mapped_column(String, nullable=True)

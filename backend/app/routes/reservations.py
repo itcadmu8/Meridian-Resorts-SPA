@@ -34,6 +34,9 @@ def list_reservations(
             Reservation.check_in,
             Reservation.check_out,
             Reservation.status,
+            Reservation.room_number,
+            Reservation.room_type,
+            Reservation.special_preference,
         )
         .join(Guest, Guest.id == Reservation.guest_id)
         .join(Property, Property.id == Reservation.property_id)
@@ -63,6 +66,9 @@ def list_reservations(
                 'check_in': row['check_in'].isoformat(),
                 'check_out': row['check_out'].isoformat(),
                 'status': row['status'].title(),
+                'room_number': row['room_number'],
+                'room_type': row['room_type'],
+                'special_preference': row['special_preference'],
             }
         )
 
@@ -82,6 +88,9 @@ def get_reservation(reservation_id: str):
             Reservation.check_in,
             Reservation.check_out,
             Reservation.status,
+            Reservation.room_number,
+            Reservation.room_type,
+            Reservation.special_preference,
         )
         .join(Guest, Guest.id == Reservation.guest_id)
         .join(Property, Property.id == Reservation.property_id)
@@ -104,4 +113,7 @@ def get_reservation(reservation_id: str):
         'check_in': row['check_in'].isoformat(),
         'check_out': row['check_out'].isoformat(),
         'status': row['status'].title(),
+        'room_number': row['room_number'],
+        'room_type': row['room_type'],
+        'special_preference': row['special_preference'],
     }

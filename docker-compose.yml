@@ -29,28 +29,28 @@ services:
       timeout: 5s
       retries: 10
 
-  # backend:
-  #   build:
-  #     context: ./backend
-  #   restart: unless-stopped
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://meridian:meridian@postgres:5432/meridian}
-  #     MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017}
-  #     MONGO_DB_NAME: ${MONGO_DB_NAME:-meridian}
-  #     SEED_ON_STARTUP: ${SEED_ON_STARTUP:-true}
-  #     DEFAULT_PROPERTY_CAPACITY: ${DEFAULT_PROPERTY_CAPACITY:-20}
-  #     CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:5173"]}
-  #   ports:
-  #     - "${BACKEND_PORT:-8000}:8000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     mongo:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./backend/app:/app/app
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://meridian:meridian@postgres:5432/meridian}
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-meridian}
+      SEED_ON_STARTUP: ${SEED_ON_STARTUP:-true}
+      DEFAULT_PROPERTY_CAPACITY: ${DEFAULT_PROPERTY_CAPACITY:-20}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:5173"]}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
 
 volumes:
   postgres_data:
