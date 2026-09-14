@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
 import { GuestPreference } from '../types';
 
 interface GuestPreferencesTableProps {
@@ -16,10 +17,20 @@ export const GuestPreferencesTable: React.FC<GuestPreferencesTableProps> = ({
 }) => {
   const pageSize = 10;
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(preferences.length / pageSize));
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter preferences by guest name
+  const filteredPreferences = useMemo(() => {
+    if (!searchTerm.trim()) return preferences;
+    return preferences.filter((item) =>
+      item.guestName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [preferences, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPreferences.length / pageSize));
   const page = Math.min(currentPage, totalPages);
   const startIndex = (page - 1) * pageSize;
-  const currentPreferences = preferences.slice(startIndex, startIndex + pageSize);
+  const currentPreferences = filteredPreferences.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs mb-8 overflow-hidden">
@@ -34,6 +45,24 @@ export const GuestPreferencesTable: React.FC<GuestPreferencesTableProps> = ({
         <p className="text-xs text-slate-500 font-normal">
           Special requests &amp; accommodations for today&apos;s arrivals
         </p>
+      </div>
+
+      {/* Search Bar */}
+      <div className="p-4 bg-slate-50/50 border-b border-slate-100">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            id="guest-preference-search-input"
+            type="text"
+            placeholder="Search by guest name..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 shadow-2xs"
+          />
+        </div>
       </div>
 
       {/* Table Content */}
@@ -64,6 +93,16 @@ export const GuestPreferencesTable: React.FC<GuestPreferencesTableProps> = ({
               <tr>
                 <td colSpan={3} className="py-8 text-center text-slate-400">
                   No special guest preferences recorded for today&apos;s arrivals.
+                </td>
+              </tr>
+            ) : filteredPreferences.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="py-8 text-center text-slate-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <Search className="w-8 h-8 text-slate-300" />
+                    <p className="font-medium text-slate-500 text-sm">No guests match your search</p>
+                    <p className="text-xs text-slate-400">Try a different guest name.</p>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -105,13 +144,13 @@ export const GuestPreferencesTable: React.FC<GuestPreferencesTableProps> = ({
         <div>
           Showing{' '}
           <span className="font-semibold text-slate-700">
-            {preferences.length === 0 ? 0 : startIndex + 1}
+            {filteredPreferences.length === 0 ? 0 : startIndex + 1}
           </span>
           -
           <span className="font-semibold text-slate-700">
-            {Math.min(startIndex + pageSize, preferences.length)}
+            {Math.min(startIndex + pageSize, filteredPreferences.length)}
           </span>{' '}
-          of <span className="font-semibold text-slate-700">{preferences.length}</span> preferences
+          of <span className="font-semibold text-slate-700">{filteredPreferences.length}</span> preferences
         </div>
 
         {totalPages > 1 && (
