@@ -44,6 +44,10 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5174",
     ]
 
+    # AI concierge chatbot (Google Gemini)
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-3.6-flash"
+
     # Set to true only by the test suite (see tests/conftest.py) to skip touching
     # the real Postgres/Mongo services during startup.
     testing: bool = False

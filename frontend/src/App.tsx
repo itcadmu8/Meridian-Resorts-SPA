@@ -17,6 +17,7 @@ import { ArrivalsTable } from './components/ArrivalsTable';
 import { GuestPreferencesTable } from './components/GuestPreferencesTable';
 import { ReservationModal } from './components/ReservationModal';
 import { OperationalErrorState, OperationalEmptyState } from './components/StateViews';
+import { ChatWidget } from './components/ChatWidget';
 import Dashboard from './pages/Dashboard.jsx';
 
 export default function App() {
@@ -307,6 +308,9 @@ export default function App() {
         onClose={() => setSelectedReservation(null)}
         onConfirmCheckIn={handleConfirmCheckIn}
       />
+
+      {/* AI Concierge Chatbot */}
+      <ChatWidget />
     </div>
   );
 }

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routes import reservations
+from app.routes import ai, reservations
 
 app = FastAPI(
     title="Meridian Resorts & Spa API",
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(reservations.router)
+app.include_router(ai.router)
 
 
 @app.get("/health", tags=["health"])
