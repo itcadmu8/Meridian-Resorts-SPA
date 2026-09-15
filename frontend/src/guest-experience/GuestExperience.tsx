@@ -163,7 +163,7 @@ export default function App({ onNavigate = () => {} }: { onNavigate?: (path: str
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F5] text-[#1C2826] font-sans antialiased selection:bg-[#C5A880] selection:text-white relative">
+    <div className="guest-experience-root min-h-screen bg-[#FBF9F5] text-[#1C2826] font-sans antialiased selection:bg-[#C5A880] selection:text-white relative">
       {/* Toast Notification Stack */}
       <Toast toasts={toasts} onClose={removeToast} />
 
