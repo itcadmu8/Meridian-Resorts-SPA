@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Menu } from 'lucide-react';
-import { ViewMode, NavTab, ArrivalReservation, GuestPreference, PropertyArrivalStats } from './types';
+import { ViewMode, ViewState, NavTab, ArrivalReservation, GuestPreference, PropertyArrivalStats, PropertyCoverData } from './types';
 import { getReservations, ApiReservation } from './services/api';
 import { SandboxBar } from './components/SandboxBar';
 import { Sidebar } from './components/Sidebar';
@@ -17,8 +17,10 @@ import { ArrivalsTable } from './components/ArrivalsTable';
 import { GuestPreferencesTable } from './components/GuestPreferencesTable';
 import { ReservationModal } from './components/ReservationModal';
 import { OperationalErrorState, OperationalEmptyState } from './components/StateViews';
-import { ChatWidget } from './components/ChatWidget';
-import Dashboard from './pages/Dashboard.jsx';
+import { FbCoversView } from './components/FbCoversView';
+import { DashboardOverview } from './components/DashboardOverview';
+import { INITIAL_PROPERTIES } from './data/resortData';
+import GuestLanding from './pages/guest/GuestLanding';
 
 function dateInputValue(date: Date) {
   const year = date.getFullYear();
@@ -43,6 +45,8 @@ function formatSelectedDate(value: string) {
 }
 
 export default function App() {
+  const isGuestView = window.location.pathname === '/guest';
+
   // Operational Sandbox Response View State
   const [viewMode, setViewMode] = useState<ViewMode>('live');
 
@@ -55,6 +59,8 @@ export default function App() {
   // Property filter state
   const [selectedProperty, setSelectedProperty] = useState('All Properties');
   const [selectedDate, setSelectedDate] = useState(() => dateInputValue(new Date()));
+  const [fnbViewState, setFnbViewState] = useState<ViewState>('normal');
+  const [fnbProperties] = useState<PropertyCoverData[]>(INITIAL_PROPERTIES);
 
   // Interactive selected reservation for modal view
   const [selectedReservation, setSelectedReservation] = useState<ArrivalReservation | null>(null);
@@ -208,6 +214,8 @@ export default function App() {
     }
   };
 
+  if (isGuestView) return <GuestLanding />;
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* 1. Sandbox Viewport Header Bar */}
@@ -253,7 +261,20 @@ export default function App() {
           />
 
           {/* Tab Views */}
-          {activeTab === 'arrivals' ? (
+          {activeTab === 'dashboard' ? (
+            <DashboardOverview
+              properties={fnbProperties}
+              onNavigateToFb={() => setActiveTab('fb-covers')}
+              onSelectProperty={(property) => setSelectedProperty(property.name)}
+            />
+          ) : activeTab === 'fb-covers' ? (
+            <FbCoversView
+              viewState={fnbViewState}
+              onViewStateChange={setFnbViewState}
+              properties={fnbProperties}
+              onSelectProperty={(_property) => undefined}
+            />
+          ) : activeTab === 'arrivals' ? (
             <div>
               {/* Section Header: Breadcrumb, Title, and Refresh button */}
               <SectionHeader
@@ -325,7 +346,11 @@ export default function App() {
               )}
             </div>
           ) : (
-            <Dashboard onNavigate={() => setActiveTab('arrivals')} />
+            <DashboardOverview
+              properties={fnbProperties}
+              onNavigateToFb={() => setActiveTab('fb-covers')}
+              onSelectProperty={(property) => setSelectedProperty(property.name)}
+            />
           )}
         </main>
       </div>
@@ -337,8 +362,6 @@ export default function App() {
         onConfirmCheckIn={handleConfirmCheckIn}
       />
 
-      {/* AI Concierge Chatbot */}
-      <ChatWidget />
     </div>
   );
 }
