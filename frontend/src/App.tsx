@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Menu } from 'lucide-react';
+import './App.css';
 import { ViewMode, ViewState, NavTab, ArrivalReservation, GuestPreference, PropertyArrivalStats, PropertyCoverData } from './types';
 import { getReservations, ApiReservation } from './services/api';
 import { SandboxBar } from './components/SandboxBar';
@@ -27,6 +28,7 @@ import StaffLogin from './pages/auth/StaffLogin';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import GuestExperience from './guest-experience/GuestExperience';
 import { useAuth } from './hooks/useAuth';
+import SpaBookingsExperience from './pages/staff/SpaBookingsExperience';
 
 function dateInputValue(date: Date) {
   const year = date.getFullYear();
@@ -377,6 +379,8 @@ export default function App() {
                 </>
               )}
             </div>
+          ) : activeTab === 'spa-bookings' ? (
+            <SpaBookingsExperience />
           ) : (
             <DashboardOverview
               properties={fnbProperties}
