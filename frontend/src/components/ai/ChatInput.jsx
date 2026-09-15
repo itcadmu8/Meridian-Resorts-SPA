@@ -1,4 +1,4 @@
-// Chat input placeholder.
+// Chat input aligned with Meridian dashboard design system.
 import { useState } from 'react'
 
 function ChatInput({ onSend, disabled = false }) {
@@ -19,28 +19,32 @@ function ChatInput({ onSend, disabled = false }) {
 			<input
 				value={value}
 				onChange={(event) => setValue(event.target.value)}
-				placeholder="Ask about stays, spa, or dining"
+				placeholder="Ask about stays, spa, or dining..."
 				disabled={disabled}
 				style={{
 					flex: 1,
-					border: '1px solid #d7ccbb',
-					borderRadius: '9px',
-					padding: '10px 12px',
-					fontSize: '13px',
-					background: '#fff',
+					border: '1px solid #d5dfdc',
+					borderRadius: '8px',
+					padding: '9px 12px',
+					fontSize: '12px',
+					background: '#f8fafa',
+					color: '#163d4a',
+					outline: 'none',
 				}}
 			/>
 			<button
 				type="submit"
 				disabled={disabled || !value.trim()}
 				style={{
-					border: '1px solid #2f5d55',
-					background: '#2f5d55',
-					color: '#fff',
-					borderRadius: '9px',
-					padding: '0 14px',
+					border: 'none',
+					background: '#176b63',
+					color: '#ffffff',
+					borderRadius: '8px',
+					padding: '0 16px',
 					fontSize: '12px',
-					fontWeight: 700,
+					fontWeight: 600,
+					cursor: disabled || !value.trim() ? 'not-allowed' : 'pointer',
+					opacity: disabled || !value.trim() ? 0.6 : 1,
 				}}
 			>
 				Send
