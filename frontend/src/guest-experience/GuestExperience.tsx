@@ -35,7 +35,7 @@ import {
   GuestService
 } from './types';
 
-export default function App() {
+export default function App({ onNavigate = () => {} }: { onNavigate?: (path: string) => void }) {
   const { signIn } = useAuth();
   // Navigation & Modals State
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -169,9 +169,9 @@ export default function App() {
 
       {/* Global Header */}
       <Header
-        onOpenLogin={() => setIsLoginOpen(true)}
+        onOpenLogin={() => window.location.assign('/login')}
         onOpenMyStay={() => setIsMyStayOpen(true)}
-        onBookNow={() => setIsBookingOpen(true)}
+        onBookNow={() => window.location.assign(localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
       />
 
       {/* Hero Section */}
@@ -180,7 +180,7 @@ export default function App() {
           const el = document.getElementById('resorts');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
-        onBookStay={() => setIsBookingOpen(true)}
+        onBookStay={() => window.location.assign(localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
       />
 
       {/* Booking Bar (Search Widget) */}

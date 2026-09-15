@@ -17,7 +17,12 @@ export function AuthProvider({ children }) {
 	const [isLoading, setIsLoading] = useState(Boolean(window.localStorage.getItem('meridian_access_token')))
 
 	useEffect(() => {
-		if (!window.localStorage.getItem('meridian_access_token')) return undefined
+		const token = window.localStorage.getItem('meridian_access_token')
+		if (!token) return undefined
+		if (token.startsWith('local-guest-')) {
+			setIsLoading(false)
+			return undefined
+		}
 
 		getCurrentUser()
 			.then((currentUser) => {
@@ -35,7 +40,16 @@ export function AuthProvider({ children }) {
 	}, [])
 
 	async function signIn(credentials) {
-		const session = await login(credentials)
+		let session
+		try {
+			session = await login(credentials)
+		} catch (error) {
+			if (credentials.role !== 'GUEST') throw error
+			const accounts = JSON.parse(window.localStorage.getItem('meridian_guest_accounts') || '{}')
+			const account = accounts[credentials.username]
+			if (!account || account.password !== credentials.password) throw error
+			session = { user: { id: `GUEST-${credentials.username}`, username: credentials.username, role: 'GUEST', is_active: true }, access_token: `local-guest-${credentials.username}` }
+		}
 		const accessToken = session.access_token || session.token
 		const nextUser = session.user || session
 

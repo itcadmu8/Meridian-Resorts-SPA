@@ -10,6 +10,7 @@ interface LoginExperienceProps {
   onStaffLoginSuccess?: (employeeId: string, role: string) => void;
   onGuestCredentials?: (username: string, password: string) => Promise<void>;
   onStaffCredentials?: (username: string, password: string) => Promise<void>;
+  onCreateGuestAccount?: () => void;
 }
 
 export const LoginExperience: React.FC<LoginExperienceProps> = ({
@@ -19,7 +20,8 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
   onGuestLoginSuccess,
   onStaffLoginSuccess,
   onGuestCredentials,
-  onStaffCredentials
+  onStaffCredentials,
+  onCreateGuestAccount
 }) => {
   const [activeTab, setActiveTab] = useState<'guest' | 'staff'>('guest');
 
@@ -205,6 +207,12 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
                   )}
                 </button>
               </div>
+              <p className="mt-4 text-center text-xs text-[#1C2826]/70 font-sans">
+                Don&apos;t have a Meridian account?{' '}
+                <button type="button" className="font-semibold text-[#9E8159] hover:underline" onClick={onCreateGuestAccount}>
+                  Create an account
+                </button>
+              </p>
             </form>
           ) : (
             /* Staff Login Form */

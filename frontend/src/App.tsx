@@ -8,7 +8,6 @@ import { Menu } from 'lucide-react';
 import './App.css';
 import { ViewMode, ViewState, NavTab, ArrivalReservation, GuestPreference, PropertyArrivalStats, PropertyCoverData } from './types';
 import { getReservations, ApiReservation } from './services/api';
-import { SandboxBar } from './components/SandboxBar';
 import { Sidebar } from './components/Sidebar';
 import { HeroBanner } from './components/HeroBanner';
 import { SectionHeader, KpiStats } from './components/KpiStats';
@@ -22,13 +21,16 @@ import { FbCoversView } from './components/FbCoversView';
 import { DashboardOverview } from './components/DashboardOverview';
 import { INITIAL_PROPERTIES } from './data/resortData';
 import GuestLanding from './pages/guest/GuestLanding';
-import GuestLogin from './pages/guest/GuestLogin';
 import DownloadedLogin from './pages/guest/DownloadedLogin';
 import StaffLogin from './pages/auth/StaffLogin';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import GuestExperience from './guest-experience/GuestExperience';
 import { useAuth } from './hooks/useAuth';
 import SpaBookingsExperience from './pages/staff/SpaBookingsExperience';
+import GuestRegistration from './pages/guest/GuestRegistration';
+import BookingPage from './pages/guest/BookingPage';
+import BookingConfirmation from './pages/guest/BookingConfirmation';
+import MyStayPage from './pages/guest/MyStayPage';
 
 function dateInputValue(date: Date) {
   const year = date.getFullYear();
@@ -242,18 +244,22 @@ export default function App() {
     }
   };
 
-  if (currentPath === '/guest/login') return <DownloadedLogin onNavigate={navigate} />;
+  if (currentPath === '/login' || currentPath === '/guest/login') return <DownloadedLogin onNavigate={navigate} />;
+  if (currentPath === '/register') return <GuestRegistration onNavigate={navigate} />;
   if (currentPath === '/staff/login') return <DownloadedLogin onNavigate={navigate} />;
   if (currentPath === '/guest') {
-    return <GuestExperience />;
+    return <GuestExperience onNavigate={(path) => {
+      const target = path === '/booking' ? (localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking') : path;
+      navigate(target);
+    }} />;
   }
+  if (currentPath === '/booking') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingPage onNavigate={navigate} /></ProtectedRoute>;
+  if (currentPath.startsWith('/booking/confirmation/')) return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingConfirmation bookingId={currentPath.split('/').pop() || ''} onNavigate={navigate} /></ProtectedRoute>;
+  if (currentPath === '/my-stay') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/my-stay')}><MyStayPage onNavigate={navigate} /></ProtectedRoute>;
 
   return (
     <ProtectedRoute role="STAFF" onNavigate={navigate}>
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-      {/* 1. Sandbox Viewport Header Bar */}
-      <SandboxBar viewMode={viewMode} onViewModeChange={setViewMode} />
-
       {/* Main Body Container with Sidebar and Content Area */}
       <div className="flex-1 flex flex-row relative">
         {/* 2. Left Brand Sidebar */}

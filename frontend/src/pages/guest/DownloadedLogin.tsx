@@ -9,6 +9,7 @@ interface DownloadedLoginProps {
 export default function DownloadedLogin({ onNavigate }: DownloadedLoginProps) {
   const { signIn } = useAuth();
   const navigatedAsStaff = useRef(false);
+  const redirect = new URLSearchParams(window.location.search).get('redirect') || '/guest';
 
   return (
     <div className="min-h-screen bg-[#0D242E]">
@@ -19,8 +20,9 @@ export default function DownloadedLogin({ onNavigate }: DownloadedLoginProps) {
         }}
         onGuestCredentials={async (username, password) => {
           await signIn({ username, password, role: 'GUEST' });
-          onNavigate('/guest');
+          window.location.assign(redirect);
         }}
+        onCreateGuestAccount={() => window.location.assign(`/register?redirect=${encodeURIComponent(redirect)}`)}
         onStaffCredentials={async (username, password) => {
           await signIn({ username, password, role: 'STAFF' });
           navigatedAsStaff.current = true;
