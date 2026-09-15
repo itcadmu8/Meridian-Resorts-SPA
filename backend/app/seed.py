@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from app import models
 from app.database import SessionLocal
 from app.models import utcnow
+from app.dependencies.auth import hash_password
 from app.mongo import get_preferences_collection
 
 PROPERTIES = [
@@ -54,7 +55,29 @@ PREFERENCES = [
 def seed_if_empty() -> None:
     db = SessionLocal()
     try:
-        if db.query(models.Guest).count() > 0:
+        existing_guests = db.query(models.Guest).all()
+        if existing_guests:
+            if not db.query(models.User).filter_by(username="operations").first():
+                db.add(
+                    models.User(
+                        username="operations",
+                        password_hash=hash_password("meridian2026"),
+                        role=models.UserRole.staff,
+                        is_active=True,
+                    )
+                )
+            for guest in existing_guests:
+                if not db.query(models.User).filter_by(guest_id=guest.id).first():
+                    db.add(
+                        models.User(
+                            username=guest.email,
+                            password_hash=hash_password("guest123"),
+                            role=models.UserRole.guest,
+                            guest_id=guest.id,
+                            is_active=True,
+                        )
+                    )
+            db.commit()
             return
 
         properties = []
@@ -144,6 +167,25 @@ def seed_if_empty() -> None:
                 )
             )
 
+
+        db.add(
+            models.User(
+                username="operations",
+                password_hash=hash_password("meridian2026"),
+                role=models.UserRole.staff,
+                is_active=True,
+            )
+        )
+        for guest in guests:
+            db.add(
+                models.User(
+                    username=guest.email,
+                    password_hash=hash_password("guest123"),
+                    role=models.UserRole.guest,
+                    guest_id=guest.id,
+                    is_active=True,
+                )
+            )
         db.commit()
 
         preferences_collection = get_preferences_collection()

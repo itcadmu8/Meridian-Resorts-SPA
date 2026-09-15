@@ -5,7 +5,27 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from app.models import FolioStatus, ReservationStatus
+from app.models import FolioStatus, ReservationStatus, UserRole
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    username: str
+    role: UserRole
+    guest_id: str | None = None
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
 
 # ---- Guest ----
 

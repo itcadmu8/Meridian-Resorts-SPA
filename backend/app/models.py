@@ -13,7 +13,7 @@ import enum
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Column, Date, DateTime, Enum, ForeignKey, Numeric, String
+from sqlalchemy import JSON, Boolean, Column, Date, DateTime, Enum, ForeignKey, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -40,6 +40,24 @@ class FolioStatus(enum.StrEnum):
     open = "open"
     settled = "settled"
     disputed = "disputed"
+
+
+class UserRole(enum.StrEnum):
+    staff = "STAFF"
+    guest = "GUEST"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    username = Column(String, nullable=False, unique=True, index=True)
+    password_hash = Column(String, nullable=False)
+    role = Column(Enum(UserRole), nullable=False)
+    guest_id = Column(String(36), ForeignKey("guests.id"), nullable=True, unique=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+    guest = relationship("Guest", backref="user", uselist=False)
 
 
 class Guest(Base):

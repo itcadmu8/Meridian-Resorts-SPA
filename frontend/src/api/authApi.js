@@ -1,1 +1,25 @@
-// Authentication API placeholder.
+import client from './client'
+
+function unwrap(payload) {
+	return payload?.data ?? payload
+}
+
+export async function login({ username, password, role }) {
+	const endpoint = role === 'GUEST' ? '/auth/guest/login' : '/auth/login'
+	const payload = await client.post(endpoint, { username, password })
+	return unwrap(payload)
+}
+
+export async function getCurrentUser() {
+	const payload = await client.get('/auth/me')
+	return unwrap(payload)
+}
+
+export async function logout() {
+	try {
+		await client.post('/auth/logout', {})
+	} finally {
+		window.localStorage.removeItem('meridian_access_token')
+		window.localStorage.removeItem('meridian_user')
+	}
+}

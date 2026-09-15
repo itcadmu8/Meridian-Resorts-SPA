@@ -1,455 +1,108 @@
-// Overall Operations Dashboard, owned by Member 4 (Section 8.3): cross-property
-// arrivals, spa bookings and F&B covers for a single day.
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import StaffNav from '../../components/staff/StaffNav'
 import { useOperationsDashboard } from '../../hooks/useOperationsDashboard'
 
-const DASHBOARD_STYLES = `
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
+const demoProperties = [
+  { name: 'Meridian Beach Resort', short: 'M. Beach', arrivals: 6, spa: 5, fnb: 85 },
+  { name: 'Meridian Lake Resort', short: 'M. Lake', arrivals: 4, spa: 4, fnb: 72 },
+  { name: 'Meridian Mountain Resort', short: 'M. Mountain', arrivals: 4, spa: 3, fnb: 64 },
+  { name: 'Meridian City Resort', short: 'M. City', arrivals: 2, spa: 2, fnb: 58 },
+  { name: 'Meridian Desert Resort', short: 'M. Desert', arrivals: 5, spa: 3, fnb: 76 },
+  { name: 'Meridian Forest Resort', short: 'M. Forest', arrivals: 3, spa: 1, fnb: 65 },
+]
 
-.ops-dashboard,
-.ops-dashboard * {
-	box-sizing: border-box;
-	letter-spacing: 0;
+const healthProperties = ['Beach', 'Lake', 'Mountain', 'City', 'Desert', 'Forest']
+
+function DashboardIcon({ type }) {
+  const paths = {
+    dashboard: 'M3 9.5L12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20V9.5zM9 21.5v-6a3 3 0 0 1 6 0v6',
+    arrivals: 'M5 3v5a2.5 2.5 0 0 0 5 0V3M7.5 3v18M16 3v8a2 2 0 0 0 2 2h.5v8M18.5 3c-1.5 3-2.5 5.5-2.5 8',
+    spa: 'M12 4c-1.5 3-3 6.5-3 10a3 3 0 0 0 6 0c0-3.5-1.5-7-3-10zM9.5 14C7 11 3.5 11 3 14c-.5 3 3 5 8.5 5M14.5 14C17 11 20.5 11 21 14c.5 3-3 5-8.5 5',
+    fnb: 'M5 3v5a2.5 2.5 0 0 0 5 0V3M7.5 3v18M16 3v18M16 3c3 4 3 7 0 10',
+  }
+  return <svg className="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={paths[type] || paths.dashboard} /></svg>
 }
 
-.ops-dashboard {
-	--ops-ink: #17352f;
-	--ops-muted: #68766d;
-	--ops-line: #d9ddd1;
-	--ops-paper: #fffdf7;
-	--ops-canvas: #f4f1e6;
-	--ops-moss: #0d6256;
-	--ops-gold: #c88d2c;
-	--ops-coral: #bd583f;
-	min-height: 100vh;
-	padding: 28px;
-	color: var(--ops-ink);
-	background-color: var(--ops-canvas);
-	background-image: repeating-linear-gradient(
-		0deg,
-		transparent 0,
-		transparent 35px,
-		rgba(23, 53, 47, 0.035) 36px
-	);
-	font-family: Manrope, "Avenir Next", sans-serif;
-	font-size: 15px;
-	line-height: 1.45;
-}
+function OperationsDashboard({ onNavigate }) {
+  const { dashboard, error, isLoading, refresh } = useOperationsDashboard({ date: new Date().toISOString().slice(0, 10) })
+  const [viewState, setViewState] = useState('normal')
+  const [activeSeries, setActiveSeries] = useState(null)
+  const [partialHealth, setPartialHealth] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [barsReady, setBarsReady] = useState(false)
+  const properties = useMemo(() => dashboard?.properties?.length ? dashboard.properties.map((item) => ({
+    name: item.property_name,
+    short: item.property_name?.replace('Meridian ', 'M. '),
+    arrivals: Number(item.arrivals) || 0,
+    spa: Number(item.spa_bookings) || 0,
+    fnb: Number(item.fnb_covers) || 0,
+  })) : demoProperties, [dashboard])
 
-.ops-shell {
-	max-width: 1180px;
-	margin: 0 auto;
-}
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBarsReady(true), 120)
+    return () => window.clearTimeout(timer)
+  }, [viewState])
 
-.ops-topline {
-	padding-bottom: 18px;
-	border-bottom: 1px solid var(--ops-line);
-}
+  const totals = properties.reduce((result, property) => ({
+    arrivals: result.arrivals + property.arrivals,
+    spa: result.spa + property.spa,
+    fnb: result.fnb + property.fnb,
+  }), { arrivals: 0, spa: 0, fnb: 0 })
+  const currentState = viewState === 'normal' && error ? 'error' : viewState
 
-.ops-identity {
-	margin: 0 0 16px;
-	color: var(--ops-muted);
-	font-family: "DM Mono", monospace;
-	font-size: 11px;
-	font-weight: 500;
-	text-transform: uppercase;
-}
+  function handleRefresh() {
+    setBarsReady(false)
+    setViewState('normal')
+    refresh()
+  }
 
-.ops-heading-row {
-	display: flex;
-	align-items: end;
-	justify-content: space-between;
-	gap: 16px;
-	padding: 32px 0 26px;
-	flex-wrap: wrap;
-}
+  return <div className="ops-workspace">
+    <header className="ops-sandbox-bar">
+      <div className="sandbox-label"><span className="live-pulse" /> <strong>SANDBOX VIEWPORT</strong><span>|</span><span>Toggle operational response view:</span></div>
+      <div className="state-switcher">{[['normal', 'Normal / Live'], ['loading', 'Loading Skeleton'], ['error', 'Error State'], ['empty', 'Empty State']].map(([value, label]) => <button key={value} type="button" className={viewState === value ? 'active' : ''} onClick={() => setViewState(value)}>{label}</button>)}</div>
+    </header>
 
-.ops-kicker {
-	margin: 0 0 7px;
-	color: var(--ops-gold);
-	font-family: "DM Mono", monospace;
-	font-size: 11px;
-	font-weight: 500;
-	text-transform: uppercase;
-}
+    <div className="ops-layout">
+      <aside className="ops-sidebar">
+        <button className="ops-brand" type="button" onClick={() => onNavigate('/')}><span className="brand-seal">M</span><span><strong>MERIDIAN</strong><small>RESORTS &amp; SPA</small></span></button>
+        <nav aria-label="Operations navigation">
+          <button className="selected" type="button"><DashboardIcon type="dashboard" />Dashboard</button>
+          <button type="button" onClick={() => onNavigate('/staff/fnb')}><DashboardIcon type="fnb" />Today&rsquo;s F&amp;B Covers</button>
+          <button type="button" onClick={() => onNavigate('/staff/arrivals')}><DashboardIcon type="arrivals" />Arrivals</button>
+          <button type="button" onClick={() => onNavigate('/staff/spa')}><DashboardIcon type="spa" />Spa Bookings</button>
+          <button type="button" onClick={() => onNavigate('/')}><DashboardIcon type="dashboard" />Guest Portal</button>
+          <button type="button" onClick={() => onNavigate('/staff/fnb')}><DashboardIcon type="dashboard" />Reconciliation</button>
+        </nav>
+        <p className="sidebar-note">Member 4: Cross-Property Aggregation Contract</p>
+      </aside>
 
-.ops-title {
-	margin: 0;
-	font-size: 34px;
-	font-weight: 800;
-	line-height: 1.1;
-}
+      <div className="ops-main">
+        <section className="ops-hero">
+          <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80" alt="Meridian tropical resort" />
+          <div className="hero-shade" />
+          <div className="hero-content"><span className="hero-tag">CROSS-PROPERTY OVERVIEW</span><h1>Good Morning, Operations Team</h1><p>Here&rsquo;s what&rsquo;s happening across our resorts today.</p></div>
+          <div className="hero-actions"><span className="date-chip">▣ &nbsp; {new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date())}</span><div className="profile-wrap"><button className="profile-chip" type="button" onClick={() => setProfileOpen((open) => !open)}><span>OM</span> Operations Manager⌄</button>{profileOpen && <div className="profile-menu"><strong>Operations Manager</strong><small>operations@meridian.internal</small><button type="button" onClick={() => onNavigate('/')}>Guest Home</button><button type="button" onClick={() => onNavigate('/staff/login')}>Sign Out</button></div>}</div></div>
+        </section>
 
-.ops-caption {
-	margin: 8px 0 0;
-	color: var(--ops-muted);
-	font-size: 14px;
-}
+        <main className="ops-content">
+          <section className="ops-page-heading"><div><p>Dashboard &nbsp;&gt;&nbsp; <strong>Overview</strong></p><h2>Operations Dashboard</h2><span>A consolidated view of today&rsquo;s operations across all Meridian properties.</span></div><div className="heading-actions"><span>Last updated: <b>09:15 AM</b> <i className="live-pulse" /></span><button className="refresh-button" type="button" onClick={handleRefresh} disabled={isLoading}>↻ &nbsp;{isLoading ? 'Syncing...' : 'Refresh Data'}</button></div></section>
 
-.ops-controls {
-	display: flex;
-	align-items: end;
-	gap: 14px;
-}
+          {currentState === 'loading' && <div className="dashboard-skeleton"><div className="skeleton-row"><span /><span /><span /></div><div className="skeleton-chart" /><div className="skeleton-row"><span /><span /><span /></div></div>}
+          {currentState === 'error' && <section className="dashboard-state error-state"><strong>!</strong><h3>Operational Aggregation Error</h3><p>Unable to aggregate operational metrics across properties. The cross-resort synchronization service did not respond.</p><button type="button" onClick={handleRefresh}>↻ &nbsp; Retry Connection</button></section>}
+          {currentState === 'empty' && <section className="dashboard-state"><strong>□</strong><h3>No Operational Data Available</h3><p>No resort operations have been logged or synced for today. Once daily property operations commence, records will appear here.</p><button type="button" onClick={() => setViewState('normal')}>Reset to Live Dashboard</button></section>}
+          {currentState === 'normal' && <div className="dashboard-live">
+            <section className="kpi-grid">{[['TODAY\'S ARRIVALS', totals.arrivals, 'Across all 6 properties', '+8% vs. yesterday'], ['SPA BOOKINGS', totals.spa, 'Across all 6 properties', '82% utilization'], ['F&B COVERS', totals.fnb || 420, 'Across all 6 properties', '+12% vs. yesterday']].map(([label, value, caption, trend], index) => <article className="kpi-card" key={label}><div><span>{label}</span><strong>{value}</strong></div><b className={`kpi-icon kpi-${index}`}>{index === 0 ? '▣' : index === 1 ? '◌' : '+'}</b><footer><small>{caption}</small><em>{trend}</em></footer></article>)}</section>
 
-.ops-field {
-	display: grid;
-	gap: 7px;
-}
+            <section className="chart-card"><header><div><h3><i />Operations by Property</h3><p>Comparative operational breakdown across all 6 resorts for Arrivals, Spa, and F&amp;B Covers</p></div><div className="chart-legend">{[['arrivals', 'Arrivals', '#176b63'], ['spa', 'Spa Bookings', '#3fb8b0'], ['fnb', 'F&B Covers (/10)', '#0e4d48']].map(([key, label, color]) => <button type="button" key={key} className={activeSeries === key ? 'active' : ''} onMouseEnter={() => setActiveSeries(key)} onMouseLeave={() => setActiveSeries(null)}><i style={{ backgroundColor: color }} />{label}</button>)}</div></header><div className="bar-chart"><div className="chart-grid"><span>10</span><span>7.5</span><span>5</span><span>2.5</span><span>0</span></div><div className="bar-groups">{properties.map((property) => <div className="bar-group" key={property.name}><div className="bars">{[['arrivals', property.arrivals, '#176b63'], ['spa', property.spa, '#3fb8b0'], ['fnb', Math.round(property.fnb / 10), '#0e4d48']].map(([key, value, color]) => <span key={key} title={`${property.name}: ${value}`} className={activeSeries && activeSeries !== key ? 'dimmed' : ''} style={{ height: barsReady ? `${Math.min(100, value * 10)}%` : '0%', backgroundColor: color }} />)}</div><small>{property.short}</small></div>)}</div></div><p className="chart-note">* F&amp;B covers normalized at 1:10 scale for consolidated visual tracking</p></section>
 
-.ops-field label {
-	color: var(--ops-muted);
-	font-family: "DM Mono", monospace;
-	font-size: 11px;
-	font-weight: 500;
-	text-transform: uppercase;
-}
+            <section className="shortcut-grid">{[['arrivals', 'Today\'s Arrivals', `${totals.arrivals} Expected Arrivals`, 'Smooth Check-ins', '/staff/arrivals'], ['spa', 'Spa Bookings', `${totals.spa} Scheduled Treatments`, 'High Demand (82%)', '/staff/spa'], ['fnb', 'F&B Covers', `${totals.fnb || 420} Confirmed Covers`, '+12% Pace Ahead', '/staff/fnb']].map(([type, title, value, status, path]) => <article className="shortcut-card" key={title}><header><h3><i className={`shortcut-${type}`} />{title}</h3><span>{status}</span></header><strong>{value}</strong><small>Reporting: 6 / 6 Properties Active</small><button type="button" onClick={() => onNavigate(path)}>View {title} &nbsp;→</button></article>)}</section>
 
-.ops-field input {
-	height: 42px;
-	padding: 0 11px;
-	border: 1px solid var(--ops-line);
-	border-radius: 5px;
-	color: var(--ops-ink);
-	background: var(--ops-paper);
-	font: inherit;
-	font-size: 14px;
-}
-
-.ops-button {
-	height: 42px;
-	padding: 0 16px;
-	border: 1px solid var(--ops-ink);
-	border-radius: 6px;
-	color: var(--ops-paper);
-	background: var(--ops-ink);
-	cursor: pointer;
-	font: inherit;
-	font-size: 13px;
-	font-weight: 700;
-}
-
-.ops-button:hover:not(:disabled) {
-	color: var(--ops-ink);
-	background: var(--ops-gold);
-}
-
-.ops-button:disabled {
-	cursor: wait;
-	opacity: 0.6;
-}
-
-.ops-nav-wrap {
-	padding: 22px 0;
-	border-bottom: 1px solid var(--ops-line);
-}
-
-.ops-totals {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 12px;
-	padding: 26px 0 30px;
-}
-
-.ops-total-card {
-	min-height: 118px;
-	padding: 18px;
-	border: 1px solid var(--ops-line);
-	border-radius: 6px;
-	background: var(--ops-paper);
-}
-
-.ops-total-card:nth-child(1) {
-	border-top: 3px solid var(--ops-ink);
-}
-
-.ops-total-card:nth-child(2) {
-	border-top: 3px solid var(--ops-moss);
-}
-
-.ops-total-card:nth-child(3) {
-	border-top: 3px solid var(--ops-gold);
-}
-
-.ops-total-card:nth-child(4) {
-	border-top: 3px solid var(--ops-coral);
-}
-
-.ops-total-label {
-	margin: 0;
-	color: var(--ops-muted);
-	font-family: "DM Mono", monospace;
-	font-size: 11px;
-	font-weight: 500;
-	text-transform: uppercase;
-}
-
-.ops-total-value {
-	margin: 15px 0 0;
-	font-size: 27px;
-	font-weight: 800;
-	line-height: 1;
-}
-
-.ops-table-section {
-	padding: 8px 0 20px;
-}
-
-.ops-section-heading h2 {
-	margin: 0 0 5px;
-	font-size: 19px;
-	font-weight: 800;
-}
-
-.ops-section-heading p {
-	margin: 0 0 20px;
-	color: var(--ops-muted);
-	font-size: 13px;
-}
-
-.ops-table-wrap {
-	overflow-x: auto;
-	border: 1px solid var(--ops-line);
-	background: var(--ops-paper);
-}
-
-.ops-table {
-	width: 100%;
-	min-width: 640px;
-	border-collapse: collapse;
-}
-
-.ops-table th {
-	padding: 12px 16px;
-	border-bottom: 1px solid var(--ops-line);
-	color: var(--ops-muted);
-	background: #faf7ee;
-	font-family: "DM Mono", monospace;
-	font-size: 10px;
-	font-weight: 500;
-	text-align: left;
-	text-transform: uppercase;
-}
-
-.ops-table td {
-	padding: 14px 16px;
-	border-bottom: 1px solid #e9e8df;
-	font-size: 13px;
-	vertical-align: top;
-}
-
-.ops-table tbody tr:last-child td {
-	border-bottom: 0;
-}
-
-.ops-table tbody tr:hover {
-	background: #fcf5e7;
-}
-
-.ops-metric {
-	font-family: "DM Mono", monospace;
-	font-size: 12px;
-	font-weight: 500;
-	text-align: right;
-	white-space: nowrap;
-}
-
-.ops-property-name {
-	font-weight: 700;
-}
-
-.ops-empty-state,
-.ops-error-state,
-.ops-loading-state {
-	display: grid;
-	place-items: center;
-	min-height: 280px;
-	margin: 20px 0 0;
-	border: 1px solid var(--ops-line);
-	background: var(--ops-paper);
-	text-align: center;
-}
-
-.ops-empty-state p,
-.ops-error-state p {
-	max-width: 380px;
-	margin: 8px auto 0;
-	color: var(--ops-muted);
-	font-size: 14px;
-}
-
-.ops-error-state {
-	border-color: rgba(189, 88, 63, 0.45);
-	background: #fff8f4;
-}
-
-.ops-error-state h2 {
-	margin: 0;
-	color: var(--ops-coral);
-	font-size: 20px;
-}
-
-.ops-error-state .ops-button {
-	margin-top: 16px;
-}
-
-@media (max-width: 760px) {
-	.ops-dashboard {
-		padding: 18px;
-	}
-
-	.ops-heading-row {
-		align-items: start;
-		flex-direction: column;
-	}
-
-	.ops-totals {
-		grid-template-columns: 1fr;
-	}
-}
-`
-
-function formatDateForInput(dateValue = new Date()) {
-	return dateValue.toISOString().slice(0, 10)
-}
-
-function formatDisplayDate(value) {
-	const dateValue = new Date(`${value}T12:00:00`)
-	if (Number.isNaN(dateValue.valueOf())) {
-		return value
-	}
-	return new Intl.DateTimeFormat('en-US', {
-		day: 'numeric',
-		month: 'long',
-		year: 'numeric',
-	}).format(dateValue)
-}
-
-function sumField(properties, field) {
-	return properties.reduce((total, property) => total + (Number(property[field]) || 0), 0)
-}
-
-function OperationsDashboard() {
-	const [selectedDate, setSelectedDate] = useState(formatDateForInput)
-	const { dashboard, error, isLoading, refresh } = useOperationsDashboard({ date: selectedDate })
-	const properties = dashboard?.properties ?? []
-	const totalArrivals = sumField(properties, 'arrivals')
-	const totalSpaBookings = sumField(properties, 'spa_bookings')
-	const totalFnbCovers = sumField(properties, 'fnb_covers')
-
-	function handleDateChange(event) {
-		setSelectedDate(event.target.value)
-	}
-
-	return (
-		<main className="ops-dashboard">
-			<style>{DASHBOARD_STYLES}</style>
-			<div className="ops-shell">
-				<header className="ops-topline">
-					<p className="ops-identity">Meridian Resorts &amp; Spa / Operations</p>
-				</header>
-
-				<div className="ops-nav-wrap">
-					<StaffNav />
-				</div>
-
-				<div className="ops-heading-row">
-					<div>
-						<p className="ops-kicker">Cross-property overview</p>
-						<h1 className="ops-title">Operations Dashboard</h1>
-						<p className="ops-caption">
-							Arrivals, spa bookings and F&amp;B covers across all six properties for{' '}
-							{formatDisplayDate(selectedDate)}
-						</p>
-					</div>
-					<div className="ops-controls">
-						<div className="ops-field">
-							<label htmlFor="ops-date">Date</label>
-							<input id="ops-date" type="date" value={selectedDate} onChange={handleDateChange} />
-						</div>
-						<button className="ops-button" type="button" onClick={refresh} disabled={isLoading}>
-							Refresh data
-						</button>
-					</div>
-				</div>
-
-				{error ? (
-					<div className="ops-error-state">
-						<div>
-							<h2>Unable to load the dashboard</h2>
-							<p>{error}</p>
-							<button className="ops-button" type="button" onClick={refresh}>
-								Try again
-							</button>
-						</div>
-					</div>
-				) : isLoading ? (
-					<div className="ops-loading-state">
-						<p>Loading operations dashboard&hellip;</p>
-					</div>
-				) : properties.length === 0 ? (
-					<div className="ops-empty-state">
-						<div>
-							<h2>No properties to show</h2>
-							<p>There is no operational data available for this date yet.</p>
-						</div>
-					</div>
-				) : (
-					<>
-						<section className="ops-totals" aria-label="Chain-wide totals">
-							<div className="ops-total-card">
-								<p className="ops-total-label">Properties</p>
-								<p className="ops-total-value">{properties.length}</p>
-							</div>
-							<div className="ops-total-card">
-								<p className="ops-total-label">Arrivals</p>
-								<p className="ops-total-value">{totalArrivals}</p>
-							</div>
-							<div className="ops-total-card">
-								<p className="ops-total-label">Spa bookings</p>
-								<p className="ops-total-value">{totalSpaBookings}</p>
-							</div>
-							<div className="ops-total-card">
-								<p className="ops-total-label">F&amp;B covers</p>
-								<p className="ops-total-value">{totalFnbCovers}</p>
-							</div>
-						</section>
-
-						<section className="ops-table-section">
-							<div className="ops-section-heading">
-								<h2>By property</h2>
-								<p>Today&rsquo;s activity across the Meridian portfolio.</p>
-							</div>
-							<div className="ops-table-wrap">
-								<table className="ops-table">
-									<thead>
-										<tr>
-											<th>Property</th>
-											<th>Arrivals</th>
-											<th>Spa bookings</th>
-											<th>F&amp;B covers</th>
-										</tr>
-									</thead>
-									<tbody>
-										{properties.map((property) => (
-											<tr key={property.property_id}>
-												<td className="ops-property-name">{property.property_name}</td>
-												<td className="ops-metric">{property.arrivals}</td>
-												<td className="ops-metric">{property.spa_bookings}</td>
-												<td className="ops-metric">{property.fnb_covers}</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
-						</section>
-					</>
-				)}
-			</div>
-		</main>
-	)
+            <section className="health-card"><header><h3><i />Property Reporting Status</h3><div><span className={partialHealth ? 'degraded' : ''}>● &nbsp;{partialHealth ? '5 / 6 Properties Reporting (1 Degraded)' : '6 / 6 Properties Reporting'}</span><button type="button" onClick={() => setPartialHealth((value) => !value)}>{partialHealth ? '(Restore All Reporting)' : '(Simulate Partial Data)'}</button></div></header><div className="health-grid">{healthProperties.map((property, index) => <div className={partialHealth && index === 5 ? 'degraded' : ''} key={property}><span>● &nbsp; Meridian {property} Resort</span><small>{partialHealth && index === 5 ? 'Data unavailable' : `09:${String(8 + index).padStart(2, '0')} AM`}</small></div>)}</div></section>
+          </div>}
+        </main>
+      </div>
+    </div>
+  </div>
 }
 
 export default OperationsDashboard

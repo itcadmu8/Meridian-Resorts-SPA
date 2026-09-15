@@ -1,480 +1,54 @@
-// Meridian Guest Home (Section 4.1/4.2): public, static resort information plus
-// the "Ask Meridian AI" entry point. An unauthenticated click redirects to
-// Guest Login rather than calling the AI API (Section 4.3/9.1).
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
 
+import AiChatWidget from '../../components/ai/AiChatWidget'
+import AiLauncher from '../../components/ai/AiLauncher'
 import { useAuth } from '../../hooks/useAuth'
 
-const GUEST_HOME_STYLES = `
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
-
-.guest-home,
-.guest-home * {
-	box-sizing: border-box;
-	letter-spacing: 0;
-}
-
-.guest-home {
-	--gh-ink: #2c2015;
-	--gh-muted: #7a6b58;
-	--gh-line: #e6d9c4;
-	--gh-paper: #fffaf1;
-	--gh-canvas: #f6ecd8;
-	--gh-teal: #2f5d55;
-	--gh-gold: #b9772e;
-	--gh-coral: #bd583f;
-	min-height: 100vh;
-	color: var(--gh-ink);
-	background: var(--gh-canvas);
-	font-family: Manrope, "Avenir Next", sans-serif;
-	line-height: 1.5;
-}
-
-.guest-home-shell {
-	max-width: 1180px;
-	margin: 0 auto;
-	padding: 0 28px 90px;
-}
-
-.guest-home-topbar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	padding: 22px 0;
-	border-bottom: 1px solid var(--gh-line);
-}
-
-.guest-home-brand {
-	margin: 0;
-	font-size: 15px;
-	font-weight: 800;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-}
-
-.guest-home-topbar-actions {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.guest-home-identity {
-	color: var(--gh-muted);
-	font-family: "DM Mono", monospace;
-	font-size: 12px;
-	text-transform: uppercase;
-}
-
-.guest-home-link,
-.guest-home-button {
-	height: 38px;
-	padding: 0 16px;
-	display: inline-flex;
-	align-items: center;
-	border: 1px solid var(--gh-ink);
-	border-radius: 999px;
-	color: var(--gh-ink);
-	background: transparent;
-	cursor: pointer;
-	font: inherit;
-	font-size: 13px;
-	font-weight: 700;
-	text-decoration: none;
-}
-
-.guest-home-link:hover,
-.guest-home-button:hover {
-	color: var(--gh-paper);
-	background: var(--gh-ink);
-}
-
-.guest-home-hero {
-	padding: 56px 0 40px;
-	text-align: left;
-}
-
-.guest-home-kicker {
-	margin: 0 0 12px;
-	color: var(--gh-gold);
-	font-family: "DM Mono", monospace;
-	font-size: 12px;
-	font-weight: 500;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-}
-
-.guest-home-title {
-	max-width: 720px;
-	margin: 0 0 16px;
-	font-size: 42px;
-	font-weight: 800;
-	line-height: 1.1;
-}
-
-.guest-home-lede {
-	max-width: 560px;
-	margin: 0;
-	color: var(--gh-muted);
-	font-size: 16px;
-}
-
-.guest-home-section {
-	padding: 34px 0;
-	border-top: 1px solid var(--gh-line);
-}
-
-.guest-home-section-heading h2 {
-	margin: 0 0 6px;
-	font-size: 21px;
-	font-weight: 800;
-}
-
-.guest-home-section-heading p {
-	margin: 0 0 22px;
-	color: var(--gh-muted);
-	font-size: 14px;
-	max-width: 560px;
-}
-
-.guest-home-grid {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 16px;
-}
-
-.guest-home-card {
-	padding: 20px;
-	border: 1px solid var(--gh-line);
-	border-radius: 10px;
-	background: var(--gh-paper);
-}
-
-.guest-home-card h3 {
-	margin: 0 0 6px;
-	font-size: 15px;
-	font-weight: 700;
-}
-
-.guest-home-card p {
-	margin: 0;
-	color: var(--gh-muted);
-	font-size: 13px;
-}
-
-.guest-home-card-tag {
-	display: inline-block;
-	margin-bottom: 10px;
-	padding: 3px 9px;
-	border-radius: 999px;
-	color: var(--gh-teal);
-	background: rgba(47, 93, 85, 0.1);
-	font-family: "DM Mono", monospace;
-	font-size: 10px;
-	font-weight: 600;
-	text-transform: uppercase;
-}
-
-.guest-home-loyalty {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 14px;
-}
-
-.guest-home-loyalty-tier {
-	padding: 16px;
-	border: 1px solid var(--gh-line);
-	border-radius: 10px;
-	background: var(--gh-paper);
-	text-align: center;
-}
-
-.guest-home-loyalty-tier strong {
-	display: block;
-	margin-bottom: 4px;
-	font-size: 14px;
-}
-
-.guest-home-loyalty-tier span {
-	color: var(--gh-muted);
-	font-size: 12px;
-}
-
-.guest-home-ai-launcher {
-	position: fixed;
-	right: 26px;
-	bottom: 26px;
-	z-index: 20;
-	height: 52px;
-	padding: 0 22px;
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	border: none;
-	border-radius: 999px;
-	color: var(--gh-paper);
-	background: var(--gh-teal);
-	box-shadow: 0 16px 30px rgba(47, 93, 85, 0.35);
-	cursor: pointer;
-	font: inherit;
-	font-size: 14px;
-	font-weight: 700;
-}
-
-.guest-home-ai-launcher:hover {
-	background: var(--gh-gold);
-}
-
-.guest-home-ai-panel {
-	position: fixed;
-	right: 26px;
-	bottom: 90px;
-	z-index: 20;
-	width: min(340px, calc(100vw - 52px));
-	padding: 20px;
-	border: 1px solid var(--gh-line);
-	border-radius: 14px;
-	background: var(--gh-paper);
-	box-shadow: 0 24px 50px rgba(44, 32, 21, 0.2);
-}
-
-.guest-home-ai-panel h3 {
-	margin: 0 0 8px;
-	font-size: 15px;
-	font-weight: 800;
-}
-
-.guest-home-ai-panel p {
-	margin: 0 0 4px;
-	color: var(--gh-muted);
-	font-size: 13px;
-}
-
-.guest-home-ai-close {
-	position: absolute;
-	top: 14px;
-	right: 16px;
-	border: none;
-	background: none;
-	color: var(--gh-muted);
-	cursor: pointer;
-	font-size: 13px;
-	font-weight: 700;
-}
-
-.guest-home-footer {
-	margin-top: 20px;
-	padding-top: 24px;
-	border-top: 1px solid var(--gh-line);
-	color: var(--gh-muted);
-	font-size: 12px;
-	display: flex;
-	justify-content: space-between;
-	gap: 12px;
-	flex-wrap: wrap;
-}
-
-.guest-home-footer a {
-	color: inherit;
-}
-
-@media (max-width: 860px) {
-	.guest-home-grid,
-	.guest-home-loyalty {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-
-	.guest-home-title {
-		font-size: 32px;
-	}
-}
-
-@media (max-width: 560px) {
-	.guest-home-grid,
-	.guest-home-loyalty {
-		grid-template-columns: 1fr;
-	}
-}
-`
-
-const PROPERTIES = [
-	{ tag: 'Beach', name: 'Meridian Azure Coast', location: 'Mombasa', blurb: 'Barefoot-luxury beachfront suites with private cabana access.' },
-	{ tag: 'Mountain', name: 'Meridian Highland Retreat', location: 'Nanyuki', blurb: 'Forest-view lodges beneath Mount Kenya, built for slow mornings.' },
-	{ tag: 'City', name: 'Meridian City Gardens', location: 'Nairobi', blurb: 'A rooftop pool and skyline dining in the heart of the capital.' },
-	{ tag: 'Lakeside', name: 'Meridian Lakeview Lodge', location: 'Naivasha', blurb: 'Wake up to flamingos and still water from every terrace.' },
-	{ tag: 'Safari', name: 'Meridian Savannah Reserve', location: 'Maasai Mara', blurb: 'Tented suites on the migration route, with a private plunge pool.' },
-	{ tag: 'Beach', name: 'Meridian Coral Bay', location: 'Diani', blurb: 'Reef-side snorkeling and sunset dhow cruises, steps from your room.' },
+const properties = [
+  { id: 'azure', name: 'Meridian Azure Coast', location: 'Mombasa, Kenya', code: 'AZC', image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=85', description: 'A barefoot-luxury beachfront retreat shaped by warm tides, private cabanas, and slow coastal mornings.', amenities: ['Private beach', 'Sunset dhow cruises', 'Ocean spa'] },
+  { id: 'highland', name: 'Meridian Highland Retreat', location: 'Nanyuki, Kenya', code: 'HRT', image: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=85', description: 'Forest-view lodges beneath Mount Kenya, built for crisp air, quiet walks, and unhurried afternoons.', amenities: ['Forest lodges', 'Mountain views', 'Fireplace dining'] },
+  { id: 'city', name: 'Meridian City Gardens', location: 'Nairobi, Kenya', code: 'CTG', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=85', description: 'A rooftop pool, skyline dining, and a calm garden address in the heart of the capital.', amenities: ['Rooftop pool', 'Skyline dining', 'Urban spa'] },
+  { id: 'lake', name: 'Meridian Lakeview Lodge', location: 'Naivasha, Kenya', code: 'LWL', image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=85', description: 'Wake to flamingos and still water from every terrace at our lakeside hideaway.', amenities: ['Lake terraces', 'Birding walks', 'Garden kitchen'] },
+  { id: 'savannah', name: 'Meridian Savannah Reserve', location: 'Maasai Mara, Kenya', code: 'SVR', image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=85', description: 'Tented suites on the migration route, with a private plunge pool and expert guides.', amenities: ['Private plunge pools', 'Safari guides', 'Bush dinners'] },
+  { id: 'coral', name: 'Meridian Coral Bay', location: 'Diani, Kenya', code: 'CRB', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=85', description: 'Reef-side snorkeling, palm-shaded villas, and sunset dhow cruises just beyond your room.', amenities: ['Reef snorkeling', 'Dhow cruises', 'Palm villas'] },
 ]
 
-const LOYALTY_TIERS = [
-	{ name: 'Standard', perk: 'Member rates chain-wide' },
-	{ name: 'Silver', perk: 'Late checkout on request' },
-	{ name: 'Gold', perk: 'Complimentary spa upgrade' },
-	{ name: 'Platinum', perk: 'Suite upgrades + airport transfer' },
+const treatments = [
+  ['Deep Tissue Massage', 'Massage', '60 min', 'A restorative treatment for travel-tired muscles.'],
+  ['Coastal Glow Facial', 'Facial', '75 min', 'A hydrating sun-recovery ritual using local botanicals.'],
+  ['Hot Stone Therapy', 'Ritual', '90 min', 'Full-body warmth therapy, best after a long travel day.'],
 ]
 
-function MeridianGuestHome() {
-	const { isAuthenticated, username, logout } = useAuth()
-	const navigate = useNavigate()
-	const location = useLocation()
-	const [isAiOpen, setIsAiOpen] = useState(Boolean(location.state?.expandAiWidget))
+export default function MeridianGuestHome({ onNavigate }) {
+  const { user, isAuthenticated, username, logout } = useAuth()
+  const [selectedProperty, setSelectedProperty] = useState(properties[0])
+  const [isAiOpen, setIsAiOpen] = useState(() => window.localStorage.getItem('open_ai_after_login') === 'true')
 
-	useEffect(() => {
-		if (location.state?.expandAiWidget) {
-			navigate(location.pathname, { replace: true, state: null })
-		}
-	}, [location.pathname, location.state, navigate])
+  useEffect(() => {
+    if (isAuthenticated && window.localStorage.getItem('open_ai_after_login') === 'true') window.localStorage.removeItem('open_ai_after_login')
+  }, [isAuthenticated])
 
-	function handleAiLauncherClick() {
-		if (!isAuthenticated) {
-			navigate('/guest/login', { state: { from: location } })
-			return
-		}
-		setIsAiOpen((open) => !open)
-	}
+  function handleAiClick() {
+    if (!isAuthenticated || user?.role !== 'GUEST') {
+      onNavigate('/guest/login')
+      return
+    }
+    setIsAiOpen((open) => !open)
+  }
 
-	return (
-		<main className="guest-home">
-			<style>{GUEST_HOME_STYLES}</style>
-			<div className="guest-home-shell">
-				<header className="guest-home-topbar">
-					<p className="guest-home-brand">Meridian Resorts &amp; Spa</p>
-					<div className="guest-home-topbar-actions">
-						{isAuthenticated ? (
-							<>
-								<span className="guest-home-identity">{username}</span>
-								<button className="guest-home-button" type="button" onClick={logout}>
-									Sign out
-								</button>
-							</>
-						) : (
-							<Link className="guest-home-link" to="/guest/login">
-								Guest sign in
-							</Link>
-						)}
-					</div>
-				</header>
+  return <div className="luxury-guest-page">
+    <header className="luxury-header"><button className="luxury-brand" type="button" onClick={() => onNavigate('/')}><span>M</span><strong>MERIDIAN<small>RESORTS &amp; SPA</small></strong></button><nav><a href="#luxury-properties">Our 6 Properties</a><a href="#luxury-spa">Spa Sanctuary</a><a href="#luxury-dining">Gastronomy</a><a href="#luxury-experiences">Experiences</a></nav><div className="luxury-header-actions">{isAuthenticated && user?.role === 'GUEST' ? <div className="guest-identity"><span>{(username || 'G').slice(0, 1).toUpperCase()}</span><b>{username}</b><button type="button" onClick={logout}>Sign out</button></div> : <button type="button" onClick={() => onNavigate('/guest/login')}>Guest Login</button>}<button className="staff-link" type="button" onClick={() => onNavigate(user?.role === 'STAFF' ? '/staff/dashboard' : '/staff/login')}>Staff Portal ↗</button></div></header>
 
-				<section className="guest-home-hero">
-					<p className="guest-home-kicker">Six properties, one Meridian experience</p>
-					<h1 className="guest-home-title">
-						Beach, mountain and safari resorts, spa calendars and dining, all in one place.
-					</h1>
-					<p className="guest-home-lede">
-						Explore Meridian&rsquo;s properties, spa treatments and dining outlets, then sign in as
-						a guest to chat with Ask Meridian AI for personalized recommendations and spa
-						bookings.
-					</p>
-				</section>
+    <section className="luxury-hero"><img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1800&q=85" alt="Meridian resort pool and spa" /><div className="luxury-hero-shade" /><div className="luxury-hero-content"><span className="luxury-eyebrow">6 world-class luxury destinations</span><h1>Quiet elegance across oceans, lakes &amp; peaks.</h1><p>From overwater private villas to neoclassical alpine sanctuaries. Experience bespoke wellness, remarkable gastronomy, and attentive personal concierge care.</p><div><button className="primary-luxury-action" type="button" onClick={handleAiClick}>◌ &nbsp; Ask Meridian AI Concierge</button><a className="secondary-luxury-action" href="#luxury-properties">Explore Properties</a></div></div></section>
 
-				<section className="guest-home-section" aria-labelledby="guest-home-properties">
-					<div className="guest-home-section-heading">
-						<h2 id="guest-home-properties">Our properties</h2>
-						<p>Six resorts across Kenya&rsquo;s coast, highlands and savannah.</p>
-					</div>
-					<div className="guest-home-grid">
-						{PROPERTIES.map((property) => (
-							<article className="guest-home-card" key={property.name}>
-								<span className="guest-home-card-tag">{property.tag}</span>
-								<h3>{property.name}</h3>
-								<p>
-									{property.location} &mdash; {property.blurb}
-								</p>
-							</article>
-						))}
-					</div>
-				</section>
+    <section id="luxury-properties" className="luxury-section properties-section"><header className="luxury-section-heading"><div><span className="luxury-eyebrow dark">Portfolio</span><h2>Our six signature resorts</h2><p>Select a resort to preview its bespoke amenities, architecture, and dining offerings.</p></div><div className="property-pills">{properties.map((property) => <button type="button" key={property.id} className={selectedProperty.id === property.id ? 'active' : ''} onClick={() => setSelectedProperty(property)}>{property.name.replace('Meridian ', '')}</button>)}</div></header><article className="property-spotlight"><div className="spotlight-image"><img src={selectedProperty.image} alt={selectedProperty.name} /><span>{selectedProperty.location}</span></div><div className="spotlight-copy"><div><span className="luxury-eyebrow dark">{selectedProperty.code} · Full resort amenities</span><h3>{selectedProperty.name}</h3><p>{selectedProperty.description}</p><h4>Featured highlights</h4><div className="amenity-list">{selectedProperty.amenities.map((amenity) => <span key={amenity}>{amenity}</span>)}</div></div><footer><button type="button" onClick={handleAiClick}>Book spa or inquire with AI →</button><small>● PMS live connected</small></footer></div></article></section>
 
-				<section className="guest-home-section" aria-labelledby="guest-home-spa">
-					<div className="guest-home-section-heading">
-						<h2 id="guest-home-spa">Spa &amp; wellness</h2>
-						<p>Signature massages, facials and thermal circuits at every property.</p>
-					</div>
-					<div className="guest-home-grid">
-						<article className="guest-home-card">
-							<h3>Deep Tissue Massage</h3>
-							<p>60/90 minute sessions with our resident therapists.</p>
-						</article>
-						<article className="guest-home-card">
-							<h3>Coastal Glow Facial</h3>
-							<p>A hydrating, sun-recovery facial using local botanicals.</p>
-						</article>
-						<article className="guest-home-card">
-							<h3>Hot Stone Therapy</h3>
-							<p>Full-body warmth therapy, best booked after a long travel day.</p>
-						</article>
-					</div>
-				</section>
+    <section id="luxury-spa" className="luxury-section spa-section"><div className="centered-section-heading"><span className="luxury-eyebrow dark">Holistic sanctuary</span><h2>Signature spa treatments</h2><p>Crafted botanical remedies, hot stone therapies, and tailored facials delivered by master therapists.</p></div><div className="treatment-grid">{treatments.map(([name, category, duration, description]) => <article className="treatment-card" key={name}><header><span>{category}</span><strong>{duration}</strong></header><h3>{name}</h3><p>{description}</p><footer><small>Available chain-wide</small><button type="button" onClick={handleAiClick}>Reserve with AI →</button></footer></article>)}</div></section>
 
-				<section className="guest-home-section" aria-labelledby="guest-home-dining">
-					<div className="guest-home-section-heading">
-						<h2 id="guest-home-dining">Dining</h2>
-						<p>From beachfront grills to highland tasting menus.</p>
-					</div>
-					<div className="guest-home-grid">
-						<article className="guest-home-card">
-							<h3>All-day dining</h3>
-							<p>Breakfast, lunch and dinner covers at every property&rsquo;s main restaurant.</p>
-						</article>
-						<article className="guest-home-card">
-							<h3>Sunset dining</h3>
-							<p>Reserved terrace and beach tables for sunset seatings.</p>
-						</article>
-						<article className="guest-home-card">
-							<h3>In-room dining</h3>
-							<p>A full menu available around the clock.</p>
-						</article>
-					</div>
-				</section>
+    <section id="luxury-dining" className="luxury-section dining-section"><div><span className="luxury-eyebrow dark">Gastronomy</span><h2>Every table tells a story.</h2><p>From reef-side lunches to fireside tasting menus, our kitchens follow the character of every property. Ask Meridian AI about tonight&rsquo;s dining hours, signature dishes, and the right table for your stay.</p><button type="button" onClick={handleAiClick}>Ask about tonight →</button></div><div className="dining-stat"><strong>24/7</strong><span>in-room dining<br />across the collection</span></div></section>
 
-				<section className="guest-home-section" aria-labelledby="guest-home-loyalty">
-					<div className="guest-home-section-heading">
-						<h2 id="guest-home-loyalty">Loyalty tiers</h2>
-						<p>Benefits grow the more you stay with Meridian.</p>
-					</div>
-					<div className="guest-home-loyalty">
-						{LOYALTY_TIERS.map((tier) => (
-							<div className="guest-home-loyalty-tier" key={tier.name}>
-								<strong>{tier.name}</strong>
-								<span>{tier.perk}</span>
-							</div>
-						))}
-					</div>
-				</section>
-
-				<footer className="guest-home-footer">
-					<span>&copy; Meridian Resorts &amp; Spa</span>
-					<Link to="/staff/login">Staff sign in</Link>
-				</footer>
-			</div>
-
-			<button
-				className="guest-home-ai-launcher"
-				type="button"
-				onClick={handleAiLauncherClick}
-				aria-expanded={isAiOpen}
-			>
-				Ask Meridian AI
-			</button>
-
-			{isAiOpen ? (
-				<div className="guest-home-ai-panel" role="dialog" aria-label="Ask Meridian AI">
-					<button
-						className="guest-home-ai-close"
-						type="button"
-						onClick={() => setIsAiOpen(false)}
-						aria-label="Close Ask Meridian AI"
-					>
-						Close
-					</button>
-					<h3>Ask Meridian AI</h3>
-					<p>Signed in as {username}.</p>
-					<p>Spa and dining chat, plus guided booking, arrives with the Sprint 3 assistant.</p>
-				</div>
-			) : null}
-		</main>
-	)
+    <section id="luxury-experiences" className="experience-strip"><span>Meridian experiences</span><strong>Stay a little longer. Remember it forever.</strong><span>Six properties · one considered welcome</span></section>
+    <footer className="luxury-footer"><strong>MERIDIAN <small>RESORTS &amp; SPA</small></strong><span>Multi-property hospitality, thoughtfully connected.</span><div><button type="button" onClick={() => onNavigate('/staff/login')}>Staff Portal Login</button><button type="button" onClick={() => onNavigate('/guest/login')}>Guest Account</button></div></footer>
+    {!isAiOpen && <AiLauncher onClick={handleAiClick} />}{isAiOpen && <AiChatWidget onClose={() => setIsAiOpen(false)} />}
+  </div>
 }
-
-export default MeridianGuestHome
