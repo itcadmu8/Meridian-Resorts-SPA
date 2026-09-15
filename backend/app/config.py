@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     # Set to true only by the test suite (see tests/conftest.py) to skip touching
     # the real Postgres/Mongo services during startup.
     testing: bool = False
+    auth_secret: str = "meridian-development-auth-secret-change-me"
 
 
 settings = Settings()
