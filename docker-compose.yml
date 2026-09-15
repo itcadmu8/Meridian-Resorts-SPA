@@ -40,6 +40,7 @@ services:
       SEED_ON_STARTUP: ${SEED_ON_STARTUP:-true}
       DEFAULT_PROPERTY_CAPACITY: ${DEFAULT_PROPERTY_CAPACITY:-20}
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:5173"]}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:

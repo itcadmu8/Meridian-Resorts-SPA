@@ -13,6 +13,7 @@ dependencies = [
     "pydantic-settings==2.15.0",
     "email-validator==2.3.0",
     "python-dotenv==1.2.3",
+    "google-genai>=2.23.0",
 ]
 
 [dependency-groups]
