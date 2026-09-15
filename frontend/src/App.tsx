@@ -20,6 +20,28 @@ import { OperationalErrorState, OperationalEmptyState } from './components/State
 import { ChatWidget } from './components/ChatWidget';
 import Dashboard from './pages/Dashboard.jsx';
 
+function dateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function shiftDate(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return dateInputValue(date);
+}
+
+function formatSelectedDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 export default function App() {
   // Operational Sandbox Response View State
   const [viewMode, setViewMode] = useState<ViewMode>('live');
@@ -32,6 +54,7 @@ export default function App() {
 
   // Property filter state
   const [selectedProperty, setSelectedProperty] = useState('All Properties');
+  const [selectedDate, setSelectedDate] = useState(() => dateInputValue(new Date()));
 
   // Interactive selected reservation for modal view
   const [selectedReservation, setSelectedReservation] = useState<ArrivalReservation | null>(null);
@@ -77,8 +100,7 @@ export default function App() {
     try {
       setLoadError(false);
       setViewMode('skeleton');
-      const today = new Date().toISOString().slice(0, 10);
-      const rows = await getReservations({ date_from: today, date_to: today });
+      const rows = await getReservations({ date_from: selectedDate, date_to: selectedDate });
       setArrivals(rows.map(mapReservation));
       setViewMode('live');
       setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -88,7 +110,12 @@ export default function App() {
     }
   };
 
-  useEffect(() => { loadArrivals(); }, []);
+  useEffect(() => { loadArrivals(); }, [selectedDate]);
+
+  const selectDate = (date: string) => {
+    setSelectedDate(date);
+    setSelectedProperty('All Properties');
+  };
 
   const propertyStats = useMemo<PropertyArrivalStats[]>(() => {
     const colors = ['#0f766e', '#0d9488', '#14b8a6', '#2dd4bf', '#5eead4', '#99f6e4'];
@@ -217,10 +244,12 @@ export default function App() {
 
           {/* Hero Banner with Resort Image */}
           <HeroBanner
-            currentDate="Tue, Sep 9, 2026"
-            onProfileClick={() => {
-              alert('Operations Manager session active. Permissions: Full Property Group Access.');
-            }}
+            currentDate={formatSelectedDate(selectedDate)}
+            selectedDate={selectedDate}
+            onDateChange={selectDate}
+            onPreviousDate={() => selectDate(shiftDate(selectedDate, -1))}
+            onToday={() => selectDate(dateInputValue(new Date()))}
+            onNextDate={() => selectDate(shiftDate(selectedDate, 1))}
           />
 
           {/* Tab Views */}
@@ -232,7 +261,6 @@ export default function App() {
                 isRefreshing={isRefreshing}
                 onRefresh={handleRefresh}
               />
-
               {/* View Mode Switching: Error, Empty, Skeleton, or Live */}
               {viewMode === 'error' ? (
                 <OperationalErrorState onRetry={loadArrivals} />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getReservations } from '../services/api.js'
 
 const PAGE_SIZE = 10
@@ -10,6 +10,19 @@ function initials(name = '') {
 
 function formatDate(value) {
   return new Date(`${value}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function toDateInputValue(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function shiftDate(value, days) {
+  const date = new Date(`${value}T00:00:00`)
+  date.setDate(date.getDate() + days)
+  return toDateInputValue(date)
 }
 
 function downloadCsv(rows) {
@@ -31,31 +44,42 @@ function Reservations({ onBack }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
   const [updatedAt, setUpdatedAt] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()))
+  const dateInputRef = useRef(null)
+
+  const setSelectedArrivalDate = (date) => {
+    setSelectedDate(date)
+    setPage(1)
+  }
+
+  const showPreviousDay = () => {
+    setSelectedArrivalDate(shiftDate(selectedDate, -1))
+  }
+
+  const showNextDay = () => {
+    setSelectedArrivalDate(shiftDate(selectedDate, 1))
+  }
+
+  const showToday = () => {
+    setSelectedArrivalDate(toDateInputValue(new Date()))
+  }
 
   const loadReservations = async () => {
     try {
       setLoading(true)
       setError('')
-      const today = new Date().toISOString().slice(0, 10)
-      setReservations(await getReservations({ date_from: today, date_to: today }))
+      setReservations(await getReservations({ date_from: selectedDate, date_to: selectedDate }))
       setUpdatedAt(new Date())
     } catch {
-      setError('Unable to load today\'s arrivals. Check that the backend is running.')
+      setError('Unable to load arrivals. Check that the backend is running.')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10)
-    getReservations({ date_from: today, date_to: today })
-      .then((rows) => {
-        setReservations(rows)
-        setUpdatedAt(new Date())
-      })
-      .catch(() => setError('Unable to load today\'s arrivals. Check that the backend is running.'))
-      .finally(() => setLoading(false))
-  }, [])
+    loadReservations()
+  }, [selectedDate])
 
   const propertyOptions = useMemo(() => ['All Properties', ...new Set(reservations.map((row) => row.property_name))], [reservations])
   const filteredReservations = useMemo(() => reservations.filter((row) => {
@@ -92,8 +116,8 @@ function Reservations({ onBack }) {
       <main className="stitch-main">
         <header className="stitch-hero"><div><h1>Good Morning, Operations Team</h1><p>Here&apos;s what&apos;s happening across our resorts today.</p></div><div className="stitch-user"><span>OM</span><strong>Operations Manager</strong></div></header>
         <div className="stitch-content">
-          <div className="stitch-breadcrumb"><button type="button" onClick={onBack}>Dashboard</button> <span>›</span> Today&apos;s Arrivals</div>
-          <div className="stitch-title-row"><div><h2>Today&apos;s Arrivals</h2><p>A consolidated view of today&apos;s guest arrivals across all properties.</p></div><button type="button" className="stitch-refresh" onClick={loadReservations}>↻ Refresh Data</button></div>
+          <div className="stitch-breadcrumb"><button type="button" onClick={onBack}>Dashboard</button> <span>›</span> Arrivals</div>
+          <div className="stitch-title-row"><div><h2>Arrivals</h2><p>Review guest arrivals across all properties for the selected date.</p></div><div className="arrival-date-nav"><button type="button" onClick={showPreviousDay} aria-label="Show previous date">‹ Previous</button><label className="date-selector">Date <button type="button" className="date-picker-button" onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.click()}>{formatDate(selectedDate)}</button><input ref={dateInputRef} className="date-picker-input" type="date" value={selectedDate} onChange={(event) => setSelectedArrivalDate(event.target.value)} aria-label="Select arrival date" /></label><button type="button" onClick={showToday}>Today</button><button type="button" onClick={showNextDay} aria-label="Show upcoming date">Next ›</button><button type="button" className="stitch-refresh" onClick={loadReservations}>↻ Refresh Data</button></div></div>
 
           {error && <div className="stitch-state error-state">{error}<button type="button" onClick={loadReservations}>Retry</button></div>}
           {loading ? <div className="stitch-state">Loading arrivals...</div> : (
@@ -105,11 +129,11 @@ function Reservations({ onBack }) {
               </section>
 
               <section className="stitch-chart-grid">
-                <div className="stitch-panel"><div className="panel-heading"><h3>Arrivals by Property</h3><span>Arrivals Today</span></div><div className="bars">{propertyCounts.map(([name, count], index) => <div className="bar-item" key={name} title={`${name}: ${count}`}><strong>{count}</strong><i style={{ height: `${(count / maxCount) * 100}%`, background: chartColors[index % chartColors.length] }} /><small>{name.replace('Meridian ', '')}</small></div>)}</div></div>
-                <div className="stitch-panel share-panel"><div className="panel-heading"><h3>Share of Today&apos;s Arrivals</h3><span>{reservations.length} Total</span></div><div className="donut"><strong>{reservations.length}</strong><small>ARRIVALS</small></div><div className="legend">{propertyCounts.map(([name, count], index) => <span key={name}><i style={{ background: chartColors[index % chartColors.length] }} />{name.replace('Meridian ', '')}<b>{count}</b></span>)}</div></div>
+                <div className="stitch-panel"><div className="panel-heading"><h3>Arrivals by Property</h3><span>Selected Range</span></div><div className="bars">{propertyCounts.map(([name, count], index) => <div className="bar-item" key={name} title={`${name}: ${count}`}><strong>{count}</strong><i style={{ height: `${(count / maxCount) * 100}%`, background: chartColors[index % chartColors.length] }} /><small>{name.replace('Meridian ', '')}</small></div>)}</div></div>
+                <div className="stitch-panel share-panel"><div className="panel-heading"><h3>Share of Arrivals</h3><span>{reservations.length} Total</span></div><div className="donut"><strong>{reservations.length}</strong><small>ARRIVALS</small></div><div className="legend">{propertyCounts.map(([name, count], index) => <span key={name}><i style={{ background: chartColors[index % chartColors.length] }} />{name.replace('Meridian ', '')}<b>{count}</b></span>)}</div></div>
               </section>
 
-              <section className="stitch-panel arrivals-panel"><div className="panel-heading"><h3>Arrival Details ({filteredReservations.length})</h3><button type="button" onClick={() => downloadCsv(filteredReservations)}>⇩ Export</button></div><div className="filters"><select value={propertyFilter} onChange={(event) => { setPropertyFilter(event.target.value); setPage(1) }}>{propertyOptions.map((name) => <option key={name}>{name}</option>)}</select><input value={searchTerm} onChange={(event) => { setSearchTerm(event.target.value); setPage(1) }} placeholder="Search by guest name or reservation ID..." /></div>{filteredReservations.length === 0 ? <div className="stitch-state">No arrivals found for the selected filters.</div> : <div className="stitch-table-wrap"><table><thead><tr>{['Reservation ID', 'Guest Name', 'Property', 'Check-in Date', 'Check-out Date', 'Loyalty Tier', 'Status'].map((heading) => <th key={heading}>{heading}</th>)}</tr></thead><tbody>{visibleRows.map((row) => <tr key={row.id}><td className="mono">{row.id}</td><td><span className="guest-avatar">{initials(row.guest_name)}</span>{row.guest_name}</td><td>{row.property_name}</td><td className="mono">{formatDate(row.check_in)}</td><td className="mono">{formatDate(row.check_out)}</td><td className={`tier ${row.loyalty_tier?.toLowerCase()}`}>{row.loyalty_tier}</td><td><span className={`status ${row.status.toLowerCase().replaceAll(' ', '-')}`}>{row.status}</span></td></tr>)}</tbody></table></div>}<div className="stitch-pagination"><span>Updated {updatedTime} · Showing {filteredReservations.length ? (page - 1) * PAGE_SIZE + 1 : 0}–{Math.min(page * PAGE_SIZE, filteredReservations.length)} of {filteredReservations.length} arrivals</span><div><button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>‹</button><strong>{page} / {totalPages}</strong><button type="button" disabled={page === totalPages} onClick={() => setPage(page + 1)}>›</button></div></div></section>
+              <section className="stitch-panel arrivals-panel"><div className="panel-heading"><h3>Arrival Details ({filteredReservations.length})</h3><button type="button" onClick={() => downloadCsv(filteredReservations)}>⇩ Export</button></div><div className="filters"><select value={propertyFilter} onChange={(event) => { setPropertyFilter(event.target.value); setPage(1) }}>{propertyOptions.map((name) => <option key={name}>{name}</option>)}</select><input value={searchTerm} onChange={(event) => { setSearchTerm(event.target.value); setPage(1) }} placeholder="Search by guest name or reservation ID..." /></div>{filteredReservations.length === 0 ? <div className="stitch-state">No arrivals found for {formatDate(selectedDate)}.</div> : <div className="stitch-table-wrap"><table><thead><tr>{['Reservation ID', 'Guest Name', 'Property', 'Check-in Date', 'Check-out Date', 'Loyalty Tier', 'Status'].map((heading) => <th key={heading}>{heading}</th>)}</tr></thead><tbody>{visibleRows.map((row) => <tr key={row.id}><td className="mono">{row.id}</td><td><span className="guest-avatar">{initials(row.guest_name)}</span>{row.guest_name}</td><td>{row.property_name}</td><td className="mono">{formatDate(row.check_in)}</td><td className="mono">{formatDate(row.check_out)}</td><td className={`tier ${row.loyalty_tier?.toLowerCase()}`}>{row.loyalty_tier}</td><td><span className={`status ${row.status.toLowerCase().replaceAll(' ', '-')}`}>{row.status}</span></td></tr>)}</tbody></table></div>}<div className="stitch-pagination"><span>Updated {updatedTime} · Showing {filteredReservations.length ? (page - 1) * PAGE_SIZE + 1 : 0}–{Math.min(page * PAGE_SIZE, filteredReservations.length)} of {filteredReservations.length} arrivals</span><div><button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>‹</button><strong>{page} / {totalPages}</strong><button type="button" disabled={page === totalPages} onClick={() => setPage(page + 1)}>›</button></div></div></section>
             </>
           )}
         </div>
