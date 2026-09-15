@@ -4,8 +4,7 @@ import {
   Utensils, 
   Luggage, 
   Sparkles, 
-  Building2, 
-  FileText 
+  Building2,
 } from 'lucide-react';
 import { NavTab } from '../types';
 
@@ -28,7 +27,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'arrivals', label: 'Arrivals', icon: Luggage },
     { id: 'spa-bookings', label: 'Spa Bookings', icon: Sparkles },
     { id: 'properties', label: 'Properties', icon: Building2 },
-    { id: 'reports', label: 'Reports', icon: FileText },
   ];
 
   return (

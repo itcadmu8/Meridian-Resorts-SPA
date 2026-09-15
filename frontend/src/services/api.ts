@@ -44,11 +44,11 @@ export interface ChatResponse {
   reservation: ChatReservationResult | null
 }
 
-export async function sendChatMessage(message: string, history: ChatMessage[] = []) {
+export async function sendChatMessage(message: string, history: ChatMessage[] = [], guestContext = {}) {
   const response = await fetch(`${API_BASE_URL}/api/v1/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({ message, history, ...guestContext }),
   })
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null)

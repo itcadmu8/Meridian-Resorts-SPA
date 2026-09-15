@@ -309,7 +309,7 @@ export const FbCoversView: React.FC<FbCoversViewProps> = ({
           <span className="text-[#10201E] font-semibold">Today's F&amp;B Covers</span>
         </nav>
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="p-2.5 bg-[#E8F2F0] rounded-[10px] text-[#176B63] mt-0.5 shadow-xs">
               <UtensilsCrossed className="w-6 h-6 text-[#176B63]" />
@@ -324,7 +324,7 @@ export const FbCoversView: React.FC<FbCoversViewProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 self-start md:self-auto select-none">
+          <div className="flex items-center gap-3 shrink-0 self-start sm:self-auto select-none">
             <div className="text-xs text-[#647572] flex items-center gap-1.5">
               <span>
                 Last updated:{' '}

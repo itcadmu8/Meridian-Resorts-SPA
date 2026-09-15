@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, X, Loader2, Sparkles } from 'lucide-react';
 import { sendChatMessage, ChatMessage } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 interface DisplayMessage extends ChatMessage {
   id: string;
@@ -14,6 +15,7 @@ const WELCOME_MESSAGE: DisplayMessage = {
 };
 
 export const ChatWidget: React.FC = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<DisplayMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
@@ -40,7 +42,11 @@ export const ChatWidget: React.FC = () => {
     setIsSending(true);
 
     try {
-      const response = await sendChatMessage(trimmed, history);
+      const response = await sendChatMessage(trimmed, history, {
+        guest_id: user?.id,
+        guest_name: user?.name || user?.username,
+        guest_email: user?.email || user?.username,
+      });
       setMessages((prev) => [
         ...prev,
         {

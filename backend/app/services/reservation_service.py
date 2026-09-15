@@ -35,10 +35,12 @@ def _next_id(session, model, prefix: str, pad: int = 4) -> str:
 
 
 def get_reservation_status(
-    reservation_id: str | None = None, guest_name: str | None = None
+    reservation_id: str | None = None,
+    guest_name: str | None = None,
+    guest_email: str | None = None,
 ) -> list[dict]:
     """Look up reservation(s) by reservation id or guest name."""
-    if not reservation_id and not guest_name:
+    if not reservation_id and not guest_name and not guest_email:
         return []
 
     stmt = (
@@ -50,6 +52,8 @@ def get_reservation_status(
         stmt = stmt.where(Reservation.id == reservation_id)
     elif guest_name:
         stmt = stmt.where(Guest.name.ilike(f"%{guest_name}%"))
+    if guest_email:
+        stmt = stmt.where(Guest.email.ilike(guest_email))
 
     with SessionLocal() as session:
         rows = session.execute(stmt).all()
@@ -70,10 +74,12 @@ def get_reservation_status(
 
 
 def get_guest_preferences(
-    guest_name: str | None = None, guest_id: str | None = None
+    guest_name: str | None = None,
+    guest_id: str | None = None,
+    guest_email: str | None = None,
 ) -> list[dict]:
     """Look up a guest's recorded special preferences/requests."""
-    if not guest_name and not guest_id:
+    if not guest_name and not guest_id and not guest_email:
         return []
 
     stmt = select(Reservation, Guest).join(Guest, Guest.id == Reservation.guest_id)
@@ -81,6 +87,8 @@ def get_guest_preferences(
         stmt = stmt.where(Guest.id == guest_id)
     elif guest_name:
         stmt = stmt.where(Guest.name.ilike(f"%{guest_name}%"))
+    if guest_email:
+        stmt = stmt.where(Guest.email.ilike(guest_email))
 
     with SessionLocal() as session:
         rows = session.execute(stmt).all()

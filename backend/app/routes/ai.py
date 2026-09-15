@@ -11,7 +11,15 @@ def chat(request: ChatRequest):
     history = [turn.model_dump() for turn in request.history]
 
     try:
-        result = ai_service.chat(request.message, history)
+        result = ai_service.chat(
+            request.message,
+            history,
+            guest_context={
+                "guest_id": request.guest_id,
+                "guest_name": request.guest_name,
+                "guest_email": request.guest_email,
+            },
+        )
     except RuntimeError as exc:
         # Server-side misconfiguration (e.g. missing API key).
         raise HTTPException(status_code=503, detail=str(exc)) from exc

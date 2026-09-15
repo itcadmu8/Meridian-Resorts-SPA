@@ -27,6 +27,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import GuestExperience from './guest-experience/GuestExperience';
 import { useAuth } from './hooks/useAuth';
 import SpaBookingsExperience from './pages/staff/SpaBookingsExperience';
+import { PropertiesView } from './components/PropertiesView';
+import { PropertyDetailModal } from './components/PropertyDetailModal';
 import GuestRegistration from './pages/guest/GuestRegistration';
 import BookingPage from './pages/guest/BookingPage';
 import BookingConfirmation from './pages/guest/BookingConfirmation';
@@ -72,6 +74,7 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(() => dateInputValue(new Date()));
   const [fnbViewState, setFnbViewState] = useState<ViewState>('normal');
   const [fnbProperties] = useState<PropertyCoverData[]>(INITIAL_PROPERTIES);
+  const [selectedPropertyDetails, setSelectedPropertyDetails] = useState<PropertyCoverData | null>(null);
 
   // Interactive selected reservation for modal view
   const [selectedReservation, setSelectedReservation] = useState<ArrivalReservation | null>(null);
@@ -387,6 +390,8 @@ export default function App() {
             </div>
           ) : activeTab === 'spa-bookings' ? (
             <SpaBookingsExperience />
+          ) : activeTab === 'properties' ? (
+            <PropertiesView properties={fnbProperties} onSelectProperty={setSelectedPropertyDetails} />
           ) : (
             <DashboardOverview
               properties={fnbProperties}
@@ -402,6 +407,11 @@ export default function App() {
         reservation={selectedReservation}
         onClose={() => setSelectedReservation(null)}
         onConfirmCheckIn={handleConfirmCheckIn}
+      />
+
+      <PropertyDetailModal
+        property={selectedPropertyDetails}
+        onClose={() => setSelectedPropertyDetails(null)}
       />
 
       </div>
