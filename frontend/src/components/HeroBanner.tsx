@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, LogOut } from 'lucide-react';
 import resortHeaderImage from '../assets/resort-header.jpg.png';
 
 interface HeroBannerProps {
@@ -9,6 +9,7 @@ interface HeroBannerProps {
   onPreviousDate?: () => void;
   onToday?: () => void;
   onNextDate?: () => void;
+  onSignOut?: () => void;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({ 
@@ -17,9 +18,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onDateChange,
   onPreviousDate,
   onToday,
-  onNextDate
+  onNextDate,
+  onSignOut
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
   return (
     <div 
@@ -95,9 +98,45 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               OM
             </div>
             <span className="font-semibold text-slate-100">Operations Manager</span>
+            <button
+              type="button"
+              onClick={() => setSignOutConfirmOpen(true)}
+              aria-label="Sign out"
+              title="Sign out"
+              className="ml-1 rounded-md p-1 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
+      {signOutConfirmOpen && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/45 p-4" role="dialog" aria-modal="true" aria-labelledby="sign-out-title">
+          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 text-slate-800 shadow-2xl">
+            <h2 id="sign-out-title" className="text-lg font-semibold">Sign out of operations?</h2>
+            <p className="mt-2 text-sm text-slate-500">You will be returned to the public Meridian guest page.</p>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setSignOutConfirmOpen(false)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSignOutConfirmOpen(false);
+                  onSignOut?.();
+                }}
+                className="rounded-lg bg-[#0f766e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0d6660]"
+              >
+                Confirm sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

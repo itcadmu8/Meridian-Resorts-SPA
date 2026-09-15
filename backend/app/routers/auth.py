@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -14,7 +14,7 @@ def authenticate(credentials: LoginRequest, role: UserRole, db: Session) -> User
     statement = select(User).where(
         User.role == role,
         User.is_active.is_(True),
-        or_(User.username == credentials.username, User.guest.has(Guest.email == credentials.username)),
+        User.username == credentials.username,
     )
     user = db.scalar(statement)
     if user is None or not verify_password(credentials.password, user.password_hash):

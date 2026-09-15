@@ -21,6 +21,12 @@ import { FbCoversView } from './components/FbCoversView';
 import { DashboardOverview } from './components/DashboardOverview';
 import { INITIAL_PROPERTIES } from './data/resortData';
 import GuestLanding from './pages/guest/GuestLanding';
+import GuestLogin from './pages/guest/GuestLogin';
+import DownloadedLogin from './pages/guest/DownloadedLogin';
+import StaffLogin from './pages/auth/StaffLogin';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import GuestExperience from './guest-experience/GuestExperience';
+import { useAuth } from './hooks/useAuth';
 
 function dateInputValue(date: Date) {
   const year = date.getFullYear();
@@ -45,7 +51,8 @@ function formatSelectedDate(value: string) {
 }
 
 export default function App() {
-  const isGuestView = window.location.pathname === '/guest';
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname || '/');
+  const { logout } = useAuth();
 
   // Operational Sandbox Response View State
   const [viewMode, setViewMode] = useState<ViewMode>('live');
@@ -72,6 +79,23 @@ export default function App() {
   // Arrivals data state (supports checking in guests)
   const [arrivals, setArrivals] = useState<ArrivalReservation[]>([]);
   const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    const handlePopState = () => setCurrentPath(window.location.pathname || '/');
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+    window.scrollTo(0, 0);
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/guest');
+  };
 
   const propertyCategory = (propertyName: string): ArrivalReservation['propertyCategory'] => {
     const value = propertyName.toLowerCase();
@@ -116,7 +140,9 @@ export default function App() {
     }
   };
 
-  useEffect(() => { loadArrivals(); }, [selectedDate]);
+  useEffect(() => {
+    if (currentPath === '/') loadArrivals();
+  }, [selectedDate, currentPath]);
 
   const selectDate = (date: string) => {
     setSelectedDate(date);
@@ -214,10 +240,15 @@ export default function App() {
     }
   };
 
-  if (isGuestView) return <GuestLanding />;
+  if (currentPath === '/guest/login') return <DownloadedLogin onNavigate={navigate} />;
+  if (currentPath === '/staff/login') return <DownloadedLogin onNavigate={navigate} />;
+  if (currentPath === '/guest') {
+    return <GuestExperience />;
+  }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+    <ProtectedRoute role="STAFF" onNavigate={navigate}>
+      <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* 1. Sandbox Viewport Header Bar */}
       <SandboxBar viewMode={viewMode} onViewModeChange={setViewMode} />
 
@@ -258,6 +289,7 @@ export default function App() {
             onPreviousDate={() => selectDate(shiftDate(selectedDate, -1))}
             onToday={() => selectDate(dateInputValue(new Date()))}
             onNextDate={() => selectDate(shiftDate(selectedDate, 1))}
+            onSignOut={handleSignOut}
           />
 
           {/* Tab Views */}
@@ -362,6 +394,7 @@ export default function App() {
         onConfirmCheckIn={handleConfirmCheckIn}
       />
 
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

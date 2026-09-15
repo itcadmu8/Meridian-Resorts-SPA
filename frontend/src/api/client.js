@@ -1,4 +1,4 @@
-const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 const API_BASE_URL = configuredBaseUrl.endsWith('/api/v1')
 	? configuredBaseUrl
 	: `${configuredBaseUrl.replace(/\/$/, '')}/api/v1`

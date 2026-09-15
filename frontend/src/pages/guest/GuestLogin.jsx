@@ -3,7 +3,7 @@ import { LoginForm } from '../../components/auth/LoginForm'
 export default function GuestLogin({ onNavigate }) {
 	function handleSuccess() {
 		window.localStorage.setItem('open_ai_after_login', 'true')
-		onNavigate('/')
+				onNavigate('/guest')
 	}
 
 	return (

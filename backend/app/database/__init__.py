@@ -11,4 +11,12 @@ engine = create_engine(engine_url, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-__all__ = ["Base", "SessionLocal", "engine"]
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+__all__ = ["Base", "SessionLocal", "engine", "get_db"]
