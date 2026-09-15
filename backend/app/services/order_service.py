@@ -1,0 +1,1 @@
+"""F&B order service placeholder."""

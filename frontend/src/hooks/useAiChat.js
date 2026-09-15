@@ -1,0 +1,1 @@
+// Guest AI chat hook placeholder.

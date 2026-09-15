@@ -1,0 +1,1 @@
+// Spa appointments data hook placeholder.

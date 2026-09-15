@@ -1,0 +1,1 @@
+"""Multi-property inventory router placeholder."""

@@ -1,0 +1,1 @@
+"""Spa service placeholder."""

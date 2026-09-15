@@ -1,0 +1,1 @@
+// Arrivals UI test placeholder.

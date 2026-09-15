@@ -1,0 +1,1 @@
+// Spa schedule UI test placeholder.
