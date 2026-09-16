@@ -170,8 +170,8 @@ export default function App({ onNavigate = () => {} }: { onNavigate?: (path: str
       {/* Global Header */}
       <Header
         onOpenLogin={() => window.location.assign('/login')}
-        onOpenMyStay={() => setIsMyStayOpen(true)}
-        onBookNow={() => window.location.assign(localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
+        onOpenMyStay={() => onNavigate('/profile')}
+        onBookNow={() => window.location.assign(sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
       />
 
       {/* Hero Section */}
@@ -180,7 +180,7 @@ export default function App({ onNavigate = () => {} }: { onNavigate?: (path: str
           const el = document.getElementById('resorts');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
-        onBookStay={() => window.location.assign(localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
+        onBookStay={() => window.location.assign(sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
       />
 
       {/* Booking Bar (Search Widget) */}

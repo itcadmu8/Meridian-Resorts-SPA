@@ -26,7 +26,7 @@ export default function DownloadedLogin({ onNavigate }: DownloadedLoginProps) {
         onStaffCredentials={async (username, password) => {
           await signIn({ username, password, role: 'STAFF' });
           navigatedAsStaff.current = true;
-          onNavigate('/');
+          onNavigate('/staff/dashboard');
         }}
       />
     </div>

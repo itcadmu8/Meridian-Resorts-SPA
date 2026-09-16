@@ -6,7 +6,7 @@ const AuthContext = createContext(null)
 
 function readStoredUser() {
 	try {
-		return JSON.parse(window.localStorage.getItem('meridian_user') || 'null')
+		return JSON.parse(window.sessionStorage.getItem('meridian_user') || 'null')
 	} catch {
 		return null
 	}
@@ -14,10 +14,10 @@ function readStoredUser() {
 
 export function AuthProvider({ children }) {
 	const [user, setUser] = useState(readStoredUser)
-	const [isLoading, setIsLoading] = useState(Boolean(window.localStorage.getItem('meridian_access_token')))
+	const [isLoading, setIsLoading] = useState(Boolean(window.sessionStorage.getItem('meridian_access_token')))
 
 	useEffect(() => {
-		const token = window.localStorage.getItem('meridian_access_token')
+		const token = window.sessionStorage.getItem('meridian_access_token')
 		if (!token) return undefined
 		if (token.startsWith('local-guest-')) {
 			setIsLoading(false)
@@ -27,11 +27,11 @@ export function AuthProvider({ children }) {
 		getCurrentUser()
 			.then((currentUser) => {
 				setUser(currentUser)
-				window.localStorage.setItem('meridian_user', JSON.stringify(currentUser))
+				window.sessionStorage.setItem('meridian_user', JSON.stringify(currentUser))
 			})
 			.catch(() => {
-				window.localStorage.removeItem('meridian_access_token')
-				window.localStorage.removeItem('meridian_user')
+				window.sessionStorage.removeItem('meridian_access_token')
+				window.sessionStorage.removeItem('meridian_user')
 				setUser(null)
 			})
 			.finally(() => setIsLoading(false))
@@ -53,15 +53,18 @@ export function AuthProvider({ children }) {
 		const accessToken = session.access_token || session.token
 		const nextUser = session.user || session
 
-		if (accessToken) window.localStorage.setItem('meridian_access_token', accessToken)
-		window.localStorage.setItem('meridian_user', JSON.stringify(nextUser))
+		if (accessToken) window.sessionStorage.setItem('meridian_access_token', accessToken)
+		window.sessionStorage.setItem('meridian_user', JSON.stringify(nextUser))
 		setUser(nextUser)
 		return nextUser
 	}
 
 	async function signOut() {
-		await requestLogout()
-		setUser(null)
+		try {
+			await requestLogout()
+		} finally {
+			setUser(null)
+		}
 	}
 
 	const value = useMemo(() => ({

@@ -4,7 +4,7 @@ const API_BASE_URL = configuredBaseUrl.endsWith('/api/v1')
 	: `${configuredBaseUrl.replace(/\/$/, '')}/api/v1`
 
 async function request(path, options = {}) {
-	const token = window.localStorage.getItem('meridian_access_token')
+	const token = window.sessionStorage.getItem('meridian_access_token')
 	const headers = new Headers(options.headers)
 
 	headers.set('Accept', 'application/json')

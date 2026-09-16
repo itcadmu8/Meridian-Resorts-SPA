@@ -96,6 +96,7 @@ export default function App() {
   const navigate = (path: string) => {
     window.history.pushState({}, '', path);
     setCurrentPath(path);
+    if (path === '/staff/dashboard') setActiveTab('dashboard');
     window.scrollTo(0, 0);
   };
 
@@ -250,15 +251,15 @@ export default function App() {
   if (currentPath === '/login' || currentPath === '/guest/login') return <DownloadedLogin onNavigate={navigate} />;
   if (currentPath === '/register') return <GuestRegistration onNavigate={navigate} />;
   if (currentPath === '/staff/login') return <DownloadedLogin onNavigate={navigate} />;
-  if (currentPath === '/guest') {
+  if (currentPath === '/' || currentPath === '/guest') {
     return <GuestExperience onNavigate={(path) => {
-      const target = path === '/booking' ? (localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking') : path;
+      const target = path === '/booking' ? (sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking') : path;
       navigate(target);
     }} />;
   }
   if (currentPath === '/booking') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingPage onNavigate={navigate} /></ProtectedRoute>;
   if (currentPath.startsWith('/booking/confirmation/')) return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingConfirmation bookingId={currentPath.split('/').pop() || ''} onNavigate={navigate} /></ProtectedRoute>;
-  if (currentPath === '/my-stay') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/my-stay')}><MyStayPage onNavigate={navigate} /></ProtectedRoute>;
+  if (currentPath === '/profile' || currentPath === '/my-stay') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/guest/login?redirect=/profile')}><MyStayPage onNavigate={navigate} /></ProtectedRoute>;
 
   return (
     <ProtectedRoute role="STAFF" onNavigate={navigate}>

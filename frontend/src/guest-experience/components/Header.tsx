@@ -122,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              onClick={() => window.location.assign(window.localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
+              onClick={() => window.location.assign(window.sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
               id="header-book-btn"
               className="bg-[#C5A880] hover:bg-[#9E8159] text-white text-xs uppercase tracking-[0.18em] font-semibold px-5 py-2.5 rounded-full shadow-sm hover:shadow transition-all duration-300 flex items-center gap-2 transform active:scale-95"
             >
@@ -134,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Mobile Hamburger Button */}
           <div className="flex items-center space-x-3 xl:hidden">
             <button
-              onClick={() => window.location.assign(window.localStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
+              onClick={() => window.location.assign(window.sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
               className="md:hidden bg-[#C5A880] text-white text-[11px] uppercase tracking-wider font-semibold px-3.5 py-1.5 rounded-full"
             >
               Book

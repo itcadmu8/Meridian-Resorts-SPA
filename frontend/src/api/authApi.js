@@ -19,7 +19,7 @@ export async function logout() {
 	try {
 		await client.post('/auth/logout', {})
 	} finally {
-		window.localStorage.removeItem('meridian_access_token')
-		window.localStorage.removeItem('meridian_user')
+		window.sessionStorage.removeItem('meridian_access_token')
+		window.sessionStorage.removeItem('meridian_user')
 	}
 }
