@@ -1,3 +1,7 @@
+/**
+ * @file ChatInput.jsx
+ * @description React component for ChatInput.
+ */
 import { useState } from 'react'
 
 export default function ChatInput({ onSend, disabled }) {

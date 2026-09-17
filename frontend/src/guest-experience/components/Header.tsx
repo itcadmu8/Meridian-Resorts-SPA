@@ -1,3 +1,7 @@
+/**
+ * @file Header.tsx
+ * @description UI component for guest experience Header.
+ */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Compass, User, Calendar, ChevronRight, LogOut, Shield } from 'lucide-react';

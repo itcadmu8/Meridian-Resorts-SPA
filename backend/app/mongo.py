@@ -1,4 +1,10 @@
+"""
+mongo.py
+
+MongoDB / Motor connection and database client setup.
+"""
 from pymongo import MongoClient
+
 from app.config import settings
 
 _mongo_client = None

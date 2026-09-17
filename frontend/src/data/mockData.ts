@@ -1,3 +1,7 @@
+/**
+ * @file mockData.ts
+ * @description Frontend module for mockData.
+ */
 import { ArrivalReservation, GuestPreference, PropertyArrivalStats } from '../types';
 
 export const PROPERTY_STATS: PropertyArrivalStats[] = [

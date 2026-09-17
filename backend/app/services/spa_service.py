@@ -1,3 +1,8 @@
+"""
+spa_service.py
+
+Business logic service module handling spa service. Core class: SpaServiceError.
+"""
 import logging
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, time, timedelta
@@ -76,9 +81,9 @@ def get_todays_spa_bookings(
             query = query.filter(models.SpaAppointment.property_id == property_id)
 
         # Order chronologically by time_slot and then property name
-        appointments: Sequence[models.SpaAppointment] = (
-            query.order_by(models.SpaAppointment.starts_at.asc(), models.Property.name.asc()).all()
-        )
+        appointments: Sequence[models.SpaAppointment] = query.order_by(
+            models.SpaAppointment.starts_at.asc(), models.Property.name.asc()
+        ).all()
 
         bookings: list[SpaAppointmentOut] = []
         for apt in appointments:
@@ -155,13 +160,19 @@ def book_guest_spa_appointment(
 ) -> dict:
     """Book a new spa appointment for a guest."""
     from uuid import uuid4
+
     from sqlalchemy import select
+
     from app.database import SessionLocal
 
     with SessionLocal() as session:
-        prop = session.execute(
-            select(models.Property).where(models.Property.name.ilike(f"%{property_name}%"))
-        ).scalars().first()
+        prop = (
+            session.execute(
+                select(models.Property).where(models.Property.name.ilike(f"%{property_name}%"))
+            )
+            .scalars()
+            .first()
+        )
         if not prop:
             prop = session.execute(select(models.Property)).scalars().first()
 
@@ -215,7 +226,8 @@ def list_guest_spa_appointments(
     guest_id: str | None = None,
 ) -> list[dict]:
     """Retrieve existing spa appointments for a specific guest."""
-    from sqlalchemy import select, or_
+    from sqlalchemy import or_, select
+
     from app.database import SessionLocal
 
     if not guest_email and not guest_name and not guest_id:
@@ -250,4 +262,3 @@ def list_guest_spa_appointments(
             }
             for apt, prop in rows
         ]
-

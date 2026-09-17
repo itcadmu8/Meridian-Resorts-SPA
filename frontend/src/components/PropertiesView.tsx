@@ -1,3 +1,7 @@
+/**
+ * @file PropertiesView.tsx
+ * @description React component for PropertiesView.
+ */
 import React from 'react';
 import { PropertyCoverData } from '../types';
 import { Building2, MapPin, User, Users, Utensils } from 'lucide-react';

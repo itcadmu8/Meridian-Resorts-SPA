@@ -1,3 +1,7 @@
+/**
+ * @file Testimonials.tsx
+ * @description UI component for guest experience Testimonials.
+ */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ChevronLeft, ChevronRight, Quote, Sparkles } from 'lucide-react';

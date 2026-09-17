@@ -1,3 +1,7 @@
+/**
+ * @file OperationsDashboard.jsx
+ * @description Page view component for OperationsDashboard.
+ */
 import React from 'react';
 import { useOperationsDashboard } from '../../hooks/useOperationsDashboard';
 

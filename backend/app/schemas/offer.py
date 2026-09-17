@@ -1,5 +1,10 @@
+"""
+offer.py
+
+Module responsible for offer.
+"""
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -7,10 +12,10 @@ class OfferBase(BaseModel):
     property_id: str
     offer_type: str = "spa"
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     price: float = 0.0
-    active_from: Optional[datetime] = None
-    active_to: Optional[datetime] = None
+    active_from: datetime | None = None
+    active_to: datetime | None = None
     status: str = "active"
 
 

@@ -1,3 +1,7 @@
+/**
+ * @file StaffLogin.jsx
+ * @description Page view component for StaffLogin.
+ */
 import { LoginForm } from '../../components/auth/LoginForm'
 
 export default function StaffLogin({ onNavigate }) {

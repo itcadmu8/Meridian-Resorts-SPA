@@ -16,10 +16,7 @@ def list_properties() -> list[dict]:
     """Return every Meridian property with its id, name, brand, and address."""
     with SessionLocal() as session:
         rows = session.execute(select(Property)).scalars().all()
-        return [
-            {"id": p.id, "name": p.name, "brand": p.brand, "address": p.address}
-            for p in rows
-        ]
+        return [{"id": p.id, "name": p.name, "brand": p.brand, "address": p.address} for p in rows]
 
 
 def _next_id(session, model, prefix: str, pad: int = 4) -> str:
@@ -86,7 +83,8 @@ def get_reservation_status(
             "room_type": reservation.room_type,
             "adults": getattr(reservation, "adults", 1),
             "children": getattr(reservation, "children", 0),
-            "total_members": getattr(reservation, "adults", 1) + getattr(reservation, "children", 0),
+            "total_members": getattr(reservation, "adults", 1)
+            + getattr(reservation, "children", 0),
         }
         for reservation, guest, prop in rows
     ]
@@ -161,24 +159,34 @@ def create_reservation(
 
     with SessionLocal() as session:
         # Try direct match
-        property_row = session.execute(
-            select(Property).where(Property.name.ilike(f"%{property_name}%"))
-        ).scalars().first()
+        property_row = (
+            session.execute(select(Property).where(Property.name.ilike(f"%{property_name}%")))
+            .scalars()
+            .first()
+        )
 
         # If not found, strip location info like "(Sri Lanka)" or ", Maldives"
         if property_row is None:
             clean_name = property_name.split("(")[0].split(",")[0].strip()
-            property_row = session.execute(
-                select(Property).where(Property.name.ilike(f"%{clean_name}%"))
-            ).scalars().first()
+            property_row = (
+                session.execute(select(Property).where(Property.name.ilike(f"%{clean_name}%")))
+                .scalars()
+                .first()
+            )
 
         # If still not found, search key tokens
         if property_row is None:
-            tokens = [t for t in property_name.replace("(", " ").replace(")", " ").replace(",", " ").split() if len(t) > 3 and t.lower() not in ("meridian", "resort", "hotel", "spa")]
+            tokens = [
+                t
+                for t in property_name.replace("(", " ").replace(")", " ").replace(",", " ").split()
+                if len(t) > 3 and t.lower() not in ("meridian", "resort", "hotel", "spa")
+            ]
             for token in tokens:
-                property_row = session.execute(
-                    select(Property).where(Property.name.ilike(f"%{token}%"))
-                ).scalars().first()
+                property_row = (
+                    session.execute(select(Property).where(Property.name.ilike(f"%{token}%")))
+                    .scalars()
+                    .first()
+                )
                 if property_row:
                     break
 
@@ -188,26 +196,32 @@ def create_reservation(
                 f"Unknown property '{property_name}'. Available properties: {available}"
             )
 
-        # Enforce resort total active capacity limit of 80 members for overlapping dates (excluding background synthetic telemetry data R-5xxx / R-6xxx)
-        overlapping_res = session.execute(
-            select(Reservation).where(
-                Reservation.property_id == property_row.id,
-                Reservation.status != "Cancelled",
-                ~Reservation.id.like("R-5%"),
-                ~Reservation.id.like("R-6%"),
-                Reservation.check_in < check_out,
-                Reservation.check_out > check_in,
+        # Enforce resort total active capacity limit of 80 members for overlapping dates
+        # (excluding background synthetic telemetry data R-5xxx / R-6xxx)
+        overlapping_res = (
+            session.execute(
+                select(Reservation).where(
+                    Reservation.property_id == property_row.id,
+                    Reservation.status != "Cancelled",
+                    ~Reservation.id.like("R-5%"),
+                    ~Reservation.id.like("R-6%"),
+                    Reservation.check_in < check_out,
+                    Reservation.check_out > check_in,
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         existing_members = sum((r.adults or 1) + (r.children or 0) for r in overlapping_res)
         if existing_members + total_members > 80:
             raise ValueError(
-                f"Resort capacity exceeded: Maximum 80 total members allowed to stay at {property_row.name} for these dates (currently {existing_members} booked)."
+                f"Resort capacity exceeded: Maximum 80 total members allowed to stay at "
+                f"{property_row.name} for these dates (currently {existing_members} booked)."
             )
 
-        guest = session.execute(
-            select(Guest).where(Guest.email.ilike(guest_email))
-        ).scalars().first()
+        guest = (
+            session.execute(select(Guest).where(Guest.email.ilike(guest_email))).scalars().first()
+        )
 
         if guest is None:
             guest = Guest(

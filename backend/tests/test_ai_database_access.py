@@ -1,11 +1,20 @@
+"""
+test_ai_database_access.py
+
+Unit/Integration test suite for ai database access.
+"""
 from datetime import date
 
 from app.services import reservation_service, spa_service
 
 
 def test_ai_reservation_and_preference_access():
-    """Verify that get_reservation_status and get_guest_preferences work with guest_email / guest_name / demo account."""
-    res = reservation_service.get_reservation_status(guest_email="guest@meridian.com", guest_name="Guest User")
+    """Verify that get_reservation_status and get_guest_preferences work with
+    guest_email / guest_name / demo account.
+    """
+    res = reservation_service.get_reservation_status(
+        guest_email="guest@meridian.com", guest_name="Guest User"
+    )
     assert len(res) > 0
     assert res[0]["guest_name"] is not None
 

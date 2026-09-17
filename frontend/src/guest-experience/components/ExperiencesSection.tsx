@@ -1,3 +1,7 @@
+/**
+ * @file ExperiencesSection.tsx
+ * @description UI component for guest experience ExperiencesSection.
+ */
 import React, { useState } from 'react';
 import { Sparkles, ArrowRight, Clock, Users } from 'lucide-react';
 import { EXPERIENCES } from '../data/experiences';

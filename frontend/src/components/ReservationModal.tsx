@@ -1,3 +1,7 @@
+/**
+ * @file ReservationModal.tsx
+ * @description React component for ReservationModal.
+ */
 import React from 'react';
 import { X, Calendar, MapPin, BedDouble, Plane, Mail, Phone, Heart, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { ArrivalReservation } from '../types';

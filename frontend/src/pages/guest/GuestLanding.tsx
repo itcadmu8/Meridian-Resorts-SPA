@@ -1,3 +1,7 @@
+/**
+ * @file GuestLanding.tsx
+ * @description Page view component for GuestLanding.
+ */
 import React, { useState } from 'react';
 import { ChatWidget } from '../../components/ChatWidget';
 

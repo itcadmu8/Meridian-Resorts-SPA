@@ -1,3 +1,7 @@
+/**
+ * @file ExperiencePhilosophy.tsx
+ * @description UI component for guest experience ExperiencePhilosophy.
+ */
 import React from 'react';
 import { Compass, Sparkles, Utensils, ArrowRight } from 'lucide-react';
 

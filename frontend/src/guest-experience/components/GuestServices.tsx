@@ -1,3 +1,7 @@
+/**
+ * @file GuestServices.tsx
+ * @description UI component for guest experience GuestServices.
+ */
 import React, { useState } from 'react';
 import {
   Sparkles,

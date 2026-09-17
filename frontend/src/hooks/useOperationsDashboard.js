@@ -1,3 +1,7 @@
+/**
+ * @file useOperationsDashboard.js
+ * @description Custom React hook for managing OperationsDashboard state and operations.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { fetchOperationsDashboard } from '../api/dashboardApi';
 

@@ -1,3 +1,7 @@
+/**
+ * @file BookingPage.tsx
+ * @description Page view component for BookingPage.
+ */
 import React, { useMemo, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { RESORTS } from '../../guest-experience/data/resorts';

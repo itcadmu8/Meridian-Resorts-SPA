@@ -1,3 +1,7 @@
+/**
+ * @file main.tsx
+ * @description React DOM root mounting and application bootstrap entry point.
+ */
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';

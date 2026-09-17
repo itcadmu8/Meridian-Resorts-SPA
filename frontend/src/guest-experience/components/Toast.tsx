@@ -1,3 +1,7 @@
+/**
+ * @file Toast.tsx
+ * @description UI component for guest experience Toast.
+ */
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, Info, X } from 'lucide-react';

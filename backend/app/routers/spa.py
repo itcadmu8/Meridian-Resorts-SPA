@@ -81,6 +81,8 @@ def get_todays_appointments(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"code": exc.code, "message": exc.message},
         ) from exc
+
+
 @router.get(
     "/api/v1/spa/guest-appointments",
     status_code=status.HTTP_200_OK,
@@ -93,14 +95,17 @@ def get_guest_spa_appointments(
     db: Session = Depends(get_db),
 ):
     from app.services.spa_service import list_guest_spa_appointments
+
     results = list_guest_spa_appointments(
         guest_email=guest_email or "guest",
         guest_name=guest_name or "guest",
         guest_id=guest_id,
     )
     if not results:
-        from app.models import SpaAppointment
         from sqlalchemy import select
+
+        from app.models import SpaAppointment
+
         appointments = db.execute(select(SpaAppointment)).scalars().all()
         return [
             {

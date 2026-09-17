@@ -1,3 +1,7 @@
+/**
+ * @file useArrivals.js
+ * @description Custom React hook for managing Arrivals state and operations.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { fetchArrivals } from '../api/reservationsApi';
 

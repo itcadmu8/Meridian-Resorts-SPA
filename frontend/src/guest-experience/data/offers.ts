@@ -1,3 +1,7 @@
+/**
+ * @file offers.ts
+ * @description Mock data and static configuration for offers.
+ */
 import { SpecialOffer } from '../types';
 
 export const SPECIAL_OFFERS: SpecialOffer[] = [

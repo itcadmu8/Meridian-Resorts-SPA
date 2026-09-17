@@ -1,3 +1,8 @@
+"""
+reservations.py
+
+FastAPI router module for reservations management. Provides endpoints for GET /reservations, POST /reservations, GET /reservations/{reservation_id}.
+"""
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -25,8 +30,8 @@ def list_reservations(
             Reservation.id,
             Reservation.guest_id,
             Reservation.property_id,
-            Guest.name.label('guest_name'),
-            Property.name.label('property_name'),
+            Guest.name.label("guest_name"),
+            Property.name.label("property_name"),
             Guest.loyalty_tier,
             Reservation.check_in,
             Reservation.check_out,
@@ -56,25 +61,25 @@ def list_reservations(
 
     payload = []
     for row in rows:
-        adults_cnt = row['adults'] if row['adults'] is not None else 1
-        children_cnt = row['children'] if row['children'] is not None else 0
+        adults_cnt = row["adults"] if row["adults"] is not None else 1
+        children_cnt = row["children"] if row["children"] is not None else 0
         payload.append(
             {
-                'id': row['id'],
-                'guest_id': row['guest_id'],
-                'property_id': row['property_id'],
-                'guest_name': row['guest_name'],
-                'property_name': row['property_name'],
-                'loyalty_tier': row['loyalty_tier'],
-                'check_in': row['check_in'].isoformat(),
-                'check_out': row['check_out'].isoformat(),
-                'status': str(row['status']).lower(),
-                'room_number': row['room_number'],
-                'room_type': row['room_type'],
-                'special_preference': row['special_preference'],
-                'adults': adults_cnt,
-                'children': children_cnt,
-                'total_members': adults_cnt + children_cnt,
+                "id": row["id"],
+                "guest_id": row["guest_id"],
+                "property_id": row["property_id"],
+                "guest_name": row["guest_name"],
+                "property_name": row["property_name"],
+                "loyalty_tier": row["loyalty_tier"],
+                "check_in": row["check_in"].isoformat(),
+                "check_out": row["check_out"].isoformat(),
+                "status": str(row["status"]).lower(),
+                "room_number": row["room_number"],
+                "room_type": row["room_type"],
+                "special_preference": row["special_preference"],
+                "adults": adults_cnt,
+                "children": children_cnt,
+                "total_members": adults_cnt + children_cnt,
             }
         )
 
@@ -92,9 +97,14 @@ def create_reservation(payload: dict, db: Session = Depends(get_db)):
     children = int(payload.get("children", 0))
 
     if adults + children < 1:
-        raise HTTPException(status_code=400, detail="At least 1 member must be included in the reservation.")
+        raise HTTPException(
+            status_code=400, detail="At least 1 member must be included in the reservation."
+        )
     if adults + children > 80:
-        raise HTTPException(status_code=400, detail="Maximum 80 members (adults + children) allowed per resort stay.")
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum 80 members (adults + children) allowed per resort stay.",
+        )
 
     guest = db.get(Guest, guest_id)
     if not guest:
@@ -134,11 +144,11 @@ def get_reservation(reservation_id: str, db: Session = Depends(get_db)):
             Reservation.id,
             Reservation.guest_id,
             Reservation.property_id,
-            Guest.id.label('g_id'),
-            Guest.name.label('guest_name'),
-            Guest.email.label('guest_email'),
+            Guest.id.label("g_id"),
+            Guest.name.label("guest_name"),
+            Guest.email.label("guest_email"),
             Guest.loyalty_tier,
-            Property.name.label('property_name'),
+            Property.name.label("property_name"),
             Reservation.check_in,
             Reservation.check_out,
             Reservation.status,
@@ -156,31 +166,31 @@ def get_reservation(reservation_id: str, db: Session = Depends(get_db)):
     row = db.execute(stmt).mappings().first()
 
     if row is None:
-        raise HTTPException(status_code=404, detail='Reservation not found')
+        raise HTTPException(status_code=404, detail="Reservation not found")
 
-    adults_cnt = row['adults'] if row['adults'] is not None else 1
-    children_cnt = row['children'] if row['children'] is not None else 0
+    adults_cnt = row["adults"] if row["adults"] is not None else 1
+    children_cnt = row["children"] if row["children"] is not None else 0
 
     return {
-        'id': row['id'],
-        'guest_id': row['guest_id'],
-        'property_id': row['property_id'],
-        'guest_name': row['guest_name'],
-        'property_name': row['property_name'],
-        'loyalty_tier': row['loyalty_tier'],
-        'check_in': row['check_in'].isoformat(),
-        'check_out': row['check_out'].isoformat(),
-        'status': str(row['status']).lower(),
-        'room_number': row['room_number'],
-        'room_type': row['room_type'],
-        'special_preference': row['special_preference'],
-        'adults': adults_cnt,
-        'children': children_cnt,
-        'total_members': adults_cnt + children_cnt,
-        'guest': {
-            'id': row['g_id'],
-            'name': row['guest_name'],
-            'email': row['guest_email'],
-            'loyalty_tier': row['loyalty_tier'],
+        "id": row["id"],
+        "guest_id": row["guest_id"],
+        "property_id": row["property_id"],
+        "guest_name": row["guest_name"],
+        "property_name": row["property_name"],
+        "loyalty_tier": row["loyalty_tier"],
+        "check_in": row["check_in"].isoformat(),
+        "check_out": row["check_out"].isoformat(),
+        "status": str(row["status"]).lower(),
+        "room_number": row["room_number"],
+        "room_type": row["room_type"],
+        "special_preference": row["special_preference"],
+        "adults": adults_cnt,
+        "children": children_cnt,
+        "total_members": adults_cnt + children_cnt,
+        "guest": {
+            "id": row["g_id"],
+            "name": row["guest_name"],
+            "email": row["guest_email"],
+            "loyalty_tier": row["loyalty_tier"],
         },
     }

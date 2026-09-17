@@ -1,3 +1,7 @@
+/**
+ * @file SpaView.tsx
+ * @description React component for SpaView.
+ */
 import React from 'react';
 import { Sparkles, Clock, Heart, Award } from 'lucide-react';
 

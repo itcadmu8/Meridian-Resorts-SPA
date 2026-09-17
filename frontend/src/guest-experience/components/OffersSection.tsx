@@ -1,3 +1,7 @@
+/**
+ * @file OffersSection.tsx
+ * @description UI component for guest experience OffersSection.
+ */
 import React, { useState } from 'react';
 import { Sparkles, ArrowRight, Calendar } from 'lucide-react';
 import { SPECIAL_OFFERS } from '../data/offers';

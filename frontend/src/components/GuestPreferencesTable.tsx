@@ -1,3 +1,7 @@
+/**
+ * @file GuestPreferencesTable.tsx
+ * @description React component for GuestPreferencesTable.
+ */
 import React, { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { GuestPreference } from '../types';

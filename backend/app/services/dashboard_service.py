@@ -1,6 +1,12 @@
-from datetime import date, datetime, time, UTC
-from typing import Any, Dict, List, Optional
-from sqlalchemy import func, select, and_
+"""
+dashboard_service.py
+
+Business logic service module handling dashboard service.
+"""
+from datetime import date, datetime, time
+from typing import Any
+
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.models.order import Order
@@ -61,18 +67,22 @@ PROPERTY_META = {
         "manager": "David Chen",
         "capacity": 85,
         "color": "#B1E6E3",
-        "signatureVenues": ["Skyline Atrium Lounge", "The Conservatory Brasserie", "Equator Cocktail Bar"],
+        "signatureVenues": [
+            "Skyline Atrium Lounge",
+            "The Conservatory Brasserie",
+            "Equator Cocktail Bar",
+        ],
     },
 }
 
 
-def get_operations_dashboard(db: Session, target_date: Optional[date] = None) -> Dict[str, Any]:
+def get_operations_dashboard(db: Session, target_date: date | None = None) -> dict[str, Any]:
     if not target_date:
         target_date = date.today()
 
     properties = db.scalars(select(Property)).all()
 
-    prop_stats: List[Dict[str, Any]] = []
+    prop_stats: list[dict[str, Any]] = []
     total_arrivals = 0
     total_arriving_guests = 0
     total_active_stay_guests = 0
@@ -84,27 +94,35 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
     end_of_day = datetime.combine(target_date, time.max)
 
     for prop in properties:
-        meta = PROPERTY_META.get(prop.id, {
-            "code": prop.id,
-            "shortName": prop.name.replace("Meridian ", ""),
-            "location": getattr(prop, "brand", "") or "Resort Location",
-            "manager": "Resort Manager",
-            "capacity": 100,
-            "color": "#0d9488",
-            "signatureVenues": ["Resort Restaurant", "Lounge", "Bar"],
-        })
+        meta = PROPERTY_META.get(
+            prop.id,
+            {
+                "code": prop.id,
+                "shortName": prop.name.replace("Meridian ", ""),
+                "location": getattr(prop, "brand", "") or "Resort Location",
+                "manager": "Resort Manager",
+                "capacity": 100,
+                "color": "#0d9488",
+                "signatureVenues": ["Resort Restaurant", "Lounge", "Bar"],
+            },
+        )
         capacity = meta["capacity"]
         total_capacity += capacity
 
         # 1. Arrivals today
         arr_stmt = select(
             func.count(Reservation.id),
-            func.coalesce(func.sum(func.coalesce(Reservation.adults, 1) + func.coalesce(Reservation.children, 0)), 0),
+            func.coalesce(
+                func.sum(
+                    func.coalesce(Reservation.adults, 1) + func.coalesce(Reservation.children, 0)
+                ),
+                0,
+            ),
         ).where(
             and_(
                 Reservation.property_id == prop.id,
                 Reservation.check_in == target_date,
-                Reservation.status != "Cancelled"
+                Reservation.status != "Cancelled",
             )
         )
         arr_row = db.execute(arr_stmt).first()
@@ -113,13 +131,18 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
 
         # 2. Total staying guests today (Occupancy count)
         occ_stmt = select(
-            func.coalesce(func.sum(func.coalesce(Reservation.adults, 1) + func.coalesce(Reservation.children, 0)), 0)
+            func.coalesce(
+                func.sum(
+                    func.coalesce(Reservation.adults, 1) + func.coalesce(Reservation.children, 0)
+                ),
+                0,
+            )
         ).where(
             and_(
                 Reservation.property_id == prop.id,
                 Reservation.check_in <= target_date,
                 Reservation.check_out > target_date,
-                Reservation.status != "Cancelled"
+                Reservation.status != "Cancelled",
             )
         )
         occ_guests_count = db.scalar(occ_stmt) or 0
@@ -130,7 +153,7 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
                 SpaAppointment.property_id == prop.id,
                 SpaAppointment.starts_at >= start_of_day,
                 SpaAppointment.starts_at <= end_of_day,
-                SpaAppointment.status != "cancelled"
+                SpaAppointment.status != "cancelled",
             )
         )
         spa_count = db.scalar(spa_stmt) or 0
@@ -140,7 +163,7 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
             and_(
                 Order.property_id == prop.id,
                 Order.placed_at >= start_of_day,
-                Order.placed_at <= end_of_day
+                Order.placed_at <= end_of_day,
             )
         )
         orders = db.scalars(orders_stmt).all()
@@ -172,7 +195,9 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
                 room_service += qty
 
         # Calculate property occupancy percentage
-        occ_percent = min(100, int(round((occ_guests_count / capacity) * 100))) if capacity > 0 else 0
+        occ_percent = (
+            min(100, int(round((occ_guests_count / capacity) * 100))) if capacity > 0 else 0
+        )
 
         total_arrivals += arr_count
         total_arriving_guests += arr_guests_count
@@ -183,36 +208,38 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
         target_covers = 70
         variance = fb_covers - target_covers
 
-        prop_stats.append({
-            "id": prop.id,
-            "property_id": prop.id,
-            "code": meta["code"],
-            "name": prop.name,
-            "shortName": meta["shortName"],
-            "property_name": prop.name,
-            "location": meta["location"],
-            "manager": meta["manager"],
-            "capacity": capacity,
-            "occupancyPercent": occ_percent,
-            "covers": fb_covers,
-            "percentage": 0, # Will be computed across portfolio
-            "target": target_covers,
-            "variance": variance,
-            "color": meta["color"],
-            "signatureVenues": meta["signatureVenues"],
-            "breakdown": {
-                "breakfast": breakfast,
-                "lunch": lunch,
-                "dinner": dinner,
-                "roomService": room_service,
-            },
-            "arrivals_count": arr_guests_count if arr_guests_count > 0 else arr_count,
-            "reservation_count": arr_count,
-            "arriving_guests_count": arr_guests_count,
-            "staying_guests_count": occ_guests_count,
-            "spa_bookings_count": spa_count,
-            "fb_covers_count": fb_covers,
-        })
+        prop_stats.append(
+            {
+                "id": prop.id,
+                "property_id": prop.id,
+                "code": meta["code"],
+                "name": prop.name,
+                "shortName": meta["shortName"],
+                "property_name": prop.name,
+                "location": meta["location"],
+                "manager": meta["manager"],
+                "capacity": capacity,
+                "occupancyPercent": occ_percent,
+                "covers": fb_covers,
+                "percentage": 0,  # Will be computed across portfolio
+                "target": target_covers,
+                "variance": variance,
+                "color": meta["color"],
+                "signatureVenues": meta["signatureVenues"],
+                "breakdown": {
+                    "breakfast": breakfast,
+                    "lunch": lunch,
+                    "dinner": dinner,
+                    "roomService": room_service,
+                },
+                "arrivals_count": arr_guests_count if arr_guests_count > 0 else arr_count,
+                "reservation_count": arr_count,
+                "arriving_guests_count": arr_guests_count,
+                "staying_guests_count": occ_guests_count,
+                "spa_bookings_count": spa_count,
+                "fb_covers_count": fb_covers,
+            }
+        )
 
     # Compute percentage share for covers
     for p in prop_stats:
@@ -221,13 +248,19 @@ def get_operations_dashboard(db: Session, target_date: Optional[date] = None) ->
         else:
             p["percentage"] = 0
 
-    portfolio_occ_percent = min(100, int(round((total_active_stay_guests / total_capacity) * 100))) if total_capacity > 0 else 0
+    portfolio_occ_percent = (
+        min(100, int(round((total_active_stay_guests / total_capacity) * 100)))
+        if total_capacity > 0
+        else 0
+    )
 
     return {
         "date": target_date.isoformat(),
         "summary": {
             "total_properties": len(properties),
-            "total_arrivals": total_arriving_guests if total_arriving_guests > 0 else total_arrivals,
+            "total_arrivals": total_arriving_guests
+            if total_arriving_guests > 0
+            else total_arrivals,
             "total_reservations": total_arrivals,
             "total_arriving_guests": total_arriving_guests,
             "total_active_stay_guests": total_active_stay_guests,

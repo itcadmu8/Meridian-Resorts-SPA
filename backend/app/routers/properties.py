@@ -1,6 +1,12 @@
+"""
+properties.py
+
+FastAPI router module for properties management. Provides endpoints for GET /properties, GET /properties/{property_id}.
+"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.property import Property
 

@@ -1,3 +1,7 @@
+/**
+ * @file StateViews.tsx
+ * @description React component for StateViews.
+ */
 import React from 'react';
 import { AlertTriangle, RotateCcw, Search, Database } from 'lucide-react';
 

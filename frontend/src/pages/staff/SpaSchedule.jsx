@@ -1,3 +1,7 @@
+/**
+ * @file SpaSchedule.jsx
+ * @description Page view component for SpaSchedule.
+ */
 import React, { useState } from 'react';
 import { useSpaAppointments } from '../../hooks/useSpaAppointments';
 

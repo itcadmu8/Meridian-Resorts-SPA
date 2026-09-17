@@ -1,3 +1,8 @@
+"""
+test_arrivals.py
+
+Unit/Integration test suite for arrivals.
+"""
 def test_get_arrivals(client):
     response = client.get("/api/v1/arrivals")
     assert response.status_code == 200

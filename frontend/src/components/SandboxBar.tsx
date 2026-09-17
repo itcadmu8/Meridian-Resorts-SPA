@@ -1,3 +1,7 @@
+/**
+ * @file SandboxBar.tsx
+ * @description React component for SandboxBar.
+ */
 import React from 'react';
 import { ViewMode } from '../types';
 

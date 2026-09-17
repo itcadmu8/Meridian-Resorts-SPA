@@ -1,3 +1,7 @@
+/**
+ * @file OfferModal.tsx
+ * @description UI component for guest experience OfferModal.
+ */
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Calendar, Check, Tag, ArrowRight } from 'lucide-react';

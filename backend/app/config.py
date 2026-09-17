@@ -1,3 +1,8 @@
+"""
+config.py
+
+Application configuration and environment variable settings.
+"""
 import json
 from pathlib import Path
 from typing import Any
@@ -34,8 +39,8 @@ class Settings(BaseSettings):
 
     @property
     def normalized_database_url(self) -> str:
-        if self.database_url.startswith('postgresql://'):
-            return self.database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
+        if self.database_url.startswith("postgresql://"):
+            return self.database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
         return self.database_url
 
     seed_on_startup: bool = True

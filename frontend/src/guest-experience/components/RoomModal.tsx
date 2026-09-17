@@ -1,3 +1,7 @@
+/**
+ * @file RoomModal.tsx
+ * @description UI component for guest experience RoomModal.
+ */
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Users, BedDouble, Eye, Check, Calendar, Sparkles } from 'lucide-react';

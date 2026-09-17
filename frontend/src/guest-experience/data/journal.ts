@@ -1,3 +1,7 @@
+/**
+ * @file journal.ts
+ * @description Mock data and static configuration for journal.
+ */
 import { JournalArticle } from '../types';
 
 export const JOURNAL_ARTICLES: JournalArticle[] = [

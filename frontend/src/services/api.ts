@@ -1,3 +1,7 @@
+/**
+ * @file api.ts
+ * @description API client service for api requests and backend communication.
+ */
 const defaultApiHost = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000` : 'http://localhost:8000'
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || defaultApiHost
 

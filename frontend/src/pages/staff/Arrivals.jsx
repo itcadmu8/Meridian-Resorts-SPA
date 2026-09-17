@@ -1,3 +1,7 @@
+/**
+ * @file Arrivals.jsx
+ * @description Page view component for Arrivals.
+ */
 import React, { useState } from 'react';
 import { useArrivals } from '../../hooks/useArrivals';
 

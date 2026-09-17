@@ -1,3 +1,7 @@
+/**
+ * @file resorts.ts
+ * @description Mock data and static configuration for resorts.
+ */
 import { Resort } from '../types';
 
 export const RESORTS: Resort[] = [

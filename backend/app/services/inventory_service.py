@@ -1,4 +1,8 @@
-from typing import List, Optional
+"""
+inventory_service.py
+
+Business logic service module handling inventory service.
+"""
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -6,8 +10,8 @@ from app.models.inventory import MultiPropertyInventory
 
 
 def list_inventory(
-    db: Session, property_id: Optional[str] = None, inventory_type: Optional[str] = None
-) -> List[MultiPropertyInventory]:
+    db: Session, property_id: str | None = None, inventory_type: str | None = None
+) -> list[MultiPropertyInventory]:
     stmt = select(MultiPropertyInventory)
     if property_id:
         stmt = stmt.where(MultiPropertyInventory.property_id == property_id)

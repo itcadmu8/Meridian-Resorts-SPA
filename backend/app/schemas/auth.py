@@ -1,3 +1,8 @@
+"""
+auth.py
+
+Module responsible for auth.
+"""
 from pydantic import BaseModel, ConfigDict
 
 

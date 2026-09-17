@@ -1,3 +1,7 @@
+/**
+ * @file Dashboard.jsx
+ * @description Page view component for Dashboard.
+ */
 const summaryCards = [
   { label: 'Today\'s Arrivals', value: '18', tone: 'primary' },
   { label: 'Spa Bookings', value: '12', tone: 'secondary' },

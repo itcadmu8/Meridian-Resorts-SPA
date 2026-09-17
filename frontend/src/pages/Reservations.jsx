@@ -1,3 +1,7 @@
+/**
+ * @file Reservations.jsx
+ * @description Page view component for Reservations.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getReservations } from '../services/api.js'
 

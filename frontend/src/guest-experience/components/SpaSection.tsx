@@ -1,3 +1,7 @@
+/**
+ * @file SpaSection.tsx
+ * @description UI component for guest experience SpaSection.
+ */
 import React, { useState } from 'react';
 import {
   Sparkles,

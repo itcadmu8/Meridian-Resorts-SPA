@@ -1,7 +1,6 @@
 """F&B Nightly Reconciliation endpoint for UiPath automation & Staff Dashboard."""
 
 from datetime import date
-from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
@@ -9,7 +8,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.order import Order
 from app.models.property import Property
 from app.models.reservation import Reservation
 from app.services.order_service import list_fnb_orders
@@ -39,7 +37,7 @@ def get_fnb_reconciliation(
     res_stmt = select(Reservation).where(
         Reservation.check_in <= target_date,
         Reservation.check_out >= target_date,
-        Reservation.status.in_(["confirmed", "checked_in", "checked-in"])
+        Reservation.status.in_(["confirmed", "checked_in", "checked-in"]),
     )
     reservations = db.execute(res_stmt).scalars().all()
 
@@ -66,16 +64,18 @@ def get_fnb_reconciliation(
         if flagged:
             total_flagged += 1
 
-        results.append({
-            "operating_date": target_date.isoformat(),
-            "property_id": prop.id,
-            "property_name": prop.name,
-            "actual_covers": actual_covers,
-            "expected_occupancy": expected_occupancy,
-            "variance": variance,
-            "variance_percent": variance_pct,
-            "flagged": flagged,
-        })
+        results.append(
+            {
+                "operating_date": target_date.isoformat(),
+                "property_id": prop.id,
+                "property_name": prop.name,
+                "actual_covers": actual_covers,
+                "expected_occupancy": expected_occupancy,
+                "variance": variance,
+                "variance_percent": variance_pct,
+                "flagged": flagged,
+            }
+        )
 
     return {
         "operating_date": target_date.isoformat(),

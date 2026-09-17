@@ -1,3 +1,7 @@
+/**
+ * @file ResortExperiencePreview.tsx
+ * @description UI component for guest experience ResortExperiencePreview.
+ */
 import React, { useState } from 'react';
 import { Sparkles, Utensils, Flower2, Clock, MapPin, Calendar, ArrowRight, X } from 'lucide-react';
 import { Restaurant, SpaExperience } from '../types';

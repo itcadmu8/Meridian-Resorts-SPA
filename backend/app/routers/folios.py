@@ -1,5 +1,11 @@
+"""
+folios.py
+
+FastAPI router module for folios management. Provides endpoints for GET /folios/{folio_id}.
+"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.folio import Folio
 

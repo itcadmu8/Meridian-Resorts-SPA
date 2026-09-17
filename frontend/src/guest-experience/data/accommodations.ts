@@ -1,3 +1,7 @@
+/**
+ * @file accommodations.ts
+ * @description Mock data and static configuration for accommodations.
+ */
 import { Accommodation } from '../types';
 
 export const ACCOMMODATIONS: Accommodation[] = [

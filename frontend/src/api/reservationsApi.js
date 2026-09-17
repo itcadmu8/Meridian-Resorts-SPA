@@ -1,3 +1,7 @@
+/**
+ * @file reservationsApi.js
+ * @description API client service for reservations requests and backend communication.
+ */
 import client from './client';
 
 export async function fetchArrivals(params = {}) {

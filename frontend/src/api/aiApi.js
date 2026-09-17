@@ -1,3 +1,7 @@
+/**
+ * @file aiApi.js
+ * @description API client service for ai requests and backend communication.
+ */
 import client from './client'
 
 export async function sendAiMessage({ message, sessionId, context = {} }, options = {}) {

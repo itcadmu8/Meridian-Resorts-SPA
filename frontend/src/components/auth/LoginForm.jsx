@@ -1,3 +1,7 @@
+/**
+ * @file LoginForm.jsx
+ * @description React component for LoginForm.
+ */
 import { useState } from 'react'
 
 import { useAuth } from '../../hooks/useAuth'

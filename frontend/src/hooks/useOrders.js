@@ -1,3 +1,7 @@
+/**
+ * @file useOrders.js
+ * @description Custom React hook for managing Orders state and operations.
+ */
 import { useEffect, useState } from 'react'
 
 import { getOrders } from '../api/ordersApi'

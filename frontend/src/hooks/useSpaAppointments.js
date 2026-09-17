@@ -1,3 +1,7 @@
+/**
+ * @file useSpaAppointments.js
+ * @description Custom React hook for managing SpaAppointments state and operations.
+ */
 import { useEffect, useState } from 'react'
 import { getTodaysSpaBookings } from '../api/spaApi'
 

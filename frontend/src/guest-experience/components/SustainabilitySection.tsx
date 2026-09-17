@@ -1,3 +1,7 @@
+/**
+ * @file SustainabilitySection.tsx
+ * @description UI component for guest experience SustainabilitySection.
+ */
 import React from 'react';
 import { Waves, ShieldCheck, Sun, HeartHandshake, Sparkles, Leaf } from 'lucide-react';
 import { SUSTAINABILITY_PILLARS } from '../data/sustainability';

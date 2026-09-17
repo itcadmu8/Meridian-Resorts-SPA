@@ -1,3 +1,7 @@
+/**
+ * @file useAuth.js
+ * @description Custom React hook for managing Auth state and operations.
+ */
 import { createContext, createElement, useContext, useEffect, useMemo, useState } from 'react'
 
 import { getCurrentUser, login, logout as requestLogout } from '../api/authApi'

@@ -1,3 +1,7 @@
+/**
+ * @file MyStayModal.tsx
+ * @description UI component for guest experience MyStayModal.
+ */
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import {

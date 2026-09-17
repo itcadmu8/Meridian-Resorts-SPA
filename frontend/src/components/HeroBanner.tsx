@@ -1,3 +1,7 @@
+/**
+ * @file HeroBanner.tsx
+ * @description React component for HeroBanner.
+ */
 import React, { useState } from 'react';
 import { Calendar, LogOut } from 'lucide-react';
 import resortHeaderImage from '../assets/resort-header.jpg.png';

@@ -1,4 +1,8 @@
-from typing import List, Optional
+"""
+offer_service.py
+
+Business logic service module handling offer service.
+"""
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -6,8 +10,8 @@ from app.models.upsell_offer import UpsellOffer
 
 
 def list_offers(
-    db: Session, property_id: Optional[str] = None, offer_type: Optional[str] = None
-) -> List[UpsellOffer]:
+    db: Session, property_id: str | None = None, offer_type: str | None = None
+) -> list[UpsellOffer]:
     stmt = select(UpsellOffer)
     if property_id:
         stmt = stmt.where(UpsellOffer.property_id == property_id)

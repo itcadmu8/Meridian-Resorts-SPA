@@ -1,3 +1,7 @@
+/**
+ * @file ArrivalsChart.tsx
+ * @description React component for ArrivalsChart.
+ */
 import React, { useState } from 'react';
 import { PropertyArrivalStats } from '../types';
 

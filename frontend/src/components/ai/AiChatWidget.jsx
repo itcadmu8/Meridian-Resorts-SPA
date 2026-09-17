@@ -1,3 +1,7 @@
+/**
+ * @file AiChatWidget.jsx
+ * @description React component for AiChatWidget.
+ */
 import ChatInput from './ChatInput'
 import ChatMessage from './ChatMessage'
 import useAiChat from '../../hooks/useAiChat'

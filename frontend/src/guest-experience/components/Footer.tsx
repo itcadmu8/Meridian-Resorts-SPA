@@ -1,3 +1,7 @@
+/**
+ * @file Footer.tsx
+ * @description UI component for guest experience Footer.
+ */
 import React from 'react';
 import { Compass, Instagram, Facebook, Youtube, Twitter, ArrowUp, Globe } from 'lucide-react';
 

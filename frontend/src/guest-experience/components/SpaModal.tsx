@@ -1,3 +1,7 @@
+/**
+ * @file SpaModal.tsx
+ * @description UI component for guest experience SpaModal.
+ */
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Clock, Sparkles, Droplets, Check, Calendar } from 'lucide-react';

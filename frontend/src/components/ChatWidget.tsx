@@ -1,3 +1,7 @@
+/**
+ * @file ChatWidget.tsx
+ * @description React component for ChatWidget.
+ */
 import React, { useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, X, Loader2, Sparkles } from 'lucide-react';
 import { sendChatMessage, ChatMessage } from '../services/api';

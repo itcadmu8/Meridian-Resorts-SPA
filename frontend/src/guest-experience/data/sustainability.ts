@@ -1,3 +1,7 @@
+/**
+ * @file sustainability.ts
+ * @description Mock data and static configuration for sustainability.
+ */
 import { Testimonial, GuestService, SustainabilityPillar } from '../types';
 
 export const TESTIMONIALS: Testimonial[] = [

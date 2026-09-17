@@ -1,3 +1,7 @@
+/**
+ * @file FnbOperations.jsx
+ * @description Page view component for FnbOperations.
+ */
 import { useEffect, useState } from 'react'
 import client from '../../api/client'
 import { useOrders } from '../../hooks/useOrders'

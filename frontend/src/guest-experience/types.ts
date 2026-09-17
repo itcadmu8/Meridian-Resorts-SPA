@@ -1,3 +1,7 @@
+/**
+ * @file types.ts
+ * @description Guest portal experience module and views for types.
+ */
 export interface Resort {
   id: string;
   name: string;

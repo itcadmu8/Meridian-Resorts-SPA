@@ -1,3 +1,7 @@
+/**
+ * @file client.js
+ * @description API client service for client requests and backend communication.
+ */
 const defaultApiHost = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000` : 'http://localhost:8000'
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || defaultApiHost
 const BASE_HOST = rawBaseUrl.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '')

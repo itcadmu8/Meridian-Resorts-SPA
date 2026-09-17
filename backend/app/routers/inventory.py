@@ -1,4 +1,8 @@
-from typing import List, Optional
+"""
+inventory.py
+
+FastAPI router module for inventory management.
+"""
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -9,10 +13,12 @@ from app.services import inventory_service
 router = APIRouter(prefix="/api/v1/inventory", tags=["inventory"])
 
 
-@router.get("", response_model=List[InventoryRead])
+@router.get("", response_model=list[InventoryRead])
 def get_inventory(
-    property_id: Optional[str] = None,
-    inventory_type: Optional[str] = None,
+    property_id: str | None = None,
+    inventory_type: str | None = None,
     db: Session = Depends(get_db),
 ):
-    return inventory_service.list_inventory(db, property_id=property_id, inventory_type=inventory_type)
+    return inventory_service.list_inventory(
+        db, property_id=property_id, inventory_type=inventory_type
+    )

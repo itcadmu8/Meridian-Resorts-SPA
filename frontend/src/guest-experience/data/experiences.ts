@@ -1,3 +1,7 @@
+/**
+ * @file experiences.ts
+ * @description Mock data and static configuration for experiences.
+ */
 import { ExperienceItem } from '../types';
 
 export const EXPERIENCES: ExperienceItem[] = [

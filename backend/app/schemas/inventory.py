@@ -1,5 +1,10 @@
+"""
+inventory.py
+
+Module responsible for inventory.
+"""
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -19,4 +24,4 @@ class InventoryRead(InventoryBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None

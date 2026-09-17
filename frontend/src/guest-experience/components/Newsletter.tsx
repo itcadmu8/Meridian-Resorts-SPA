@@ -1,3 +1,7 @@
+/**
+ * @file Newsletter.tsx
+ * @description UI component for guest experience Newsletter.
+ */
 import React, { useState } from 'react';
 import { Mail, CheckCircle2, Sparkles } from 'lucide-react';
 

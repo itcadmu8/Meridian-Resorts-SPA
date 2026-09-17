@@ -1,3 +1,7 @@
+/**
+ * @file ArrivalsTable.tsx
+ * @description React component for ArrivalsTable.
+ */
 import React, { useState, useMemo } from 'react';
 import { Search, Download, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { ArrivalReservation } from '../types';

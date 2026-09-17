@@ -1,7 +1,14 @@
+"""
+availability.py
+
+FastAPI router module for availability management. Provides endpoints for GET /availability.
+"""
 from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.rate_plan import RatePlan
 from app.models.reservation import Reservation
@@ -19,19 +26,23 @@ def get_availability(
     if check_out <= check_in:
         raise HTTPException(status_code=400, detail="check_out must be after check_in")
 
-    rate_plans = db.execute(
-        select(RatePlan).where(RatePlan.property_id == property_id)
-    ).scalars().all()
+    rate_plans = (
+        db.execute(select(RatePlan).where(RatePlan.property_id == property_id)).scalars().all()
+    )
 
     if not rate_plans:
         raise HTTPException(status_code=404, detail="No rate plans found for this property")
 
-    booked_count = db.execute(
-        select(Reservation)
-        .where(Reservation.property_id == property_id)
-        .where(Reservation.check_in < check_out)
-        .where(Reservation.check_out > check_in)
-    ).scalars().all()
+    booked_count = (
+        db.execute(
+            select(Reservation)
+            .where(Reservation.property_id == property_id)
+            .where(Reservation.check_in < check_out)
+            .where(Reservation.check_out > check_in)
+        )
+        .scalars()
+        .all()
+    )
 
     capacity = 80
     available_count = max(0, capacity - len(booked_count))

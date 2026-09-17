@@ -1,4 +1,10 @@
+"""
+guest.py
+
+SQLAlchemy / Pydantic data models for guest. Defines Guest.
+"""
 import uuid
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -6,7 +12,7 @@ from app.database import Base
 
 
 class Guest(Base):
-    __tablename__ = 'guests'
+    __tablename__ = "guests"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String, nullable=False)

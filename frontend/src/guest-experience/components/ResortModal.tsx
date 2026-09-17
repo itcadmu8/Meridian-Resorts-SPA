@@ -1,3 +1,7 @@
+/**
+ * @file ResortModal.tsx
+ * @description UI component for guest experience ResortModal.
+ */
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, MapPin, Sparkles, Wind, Plane, Check, Calendar, ArrowRight } from 'lucide-react';

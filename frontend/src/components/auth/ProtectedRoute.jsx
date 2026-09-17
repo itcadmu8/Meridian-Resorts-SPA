@@ -1,3 +1,7 @@
+/**
+ * @file ProtectedRoute.jsx
+ * @description React component for ProtectedRoute.
+ */
 import { useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 

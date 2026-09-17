@@ -1,3 +1,7 @@
+/**
+ * @file ExperienceModal.tsx
+ * @description UI component for guest experience ExperienceModal.
+ */
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Clock, Users, Check, Calendar, Sparkles } from 'lucide-react';

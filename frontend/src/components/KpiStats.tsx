@@ -1,3 +1,7 @@
+/**
+ * @file KpiStats.tsx
+ * @description React component for KpiStats.
+ */
 import React from 'react';
 import { RefreshCw, Luggage } from 'lucide-react';
 

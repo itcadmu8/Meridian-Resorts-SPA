@@ -1,3 +1,7 @@
+/**
+ * @file GuestLogin.jsx
+ * @description Page view component for GuestLogin.
+ */
 import { LoginForm } from '../../components/auth/LoginForm'
 
 export default function GuestLogin({ onNavigate }) {

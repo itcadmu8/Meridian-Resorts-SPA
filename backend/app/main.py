@@ -1,8 +1,13 @@
+"""
+main.py
+
+FastAPI application entry point configuring middleware, CORS, routers, and lifecycle events.
+"""
 from datetime import UTC, datetime, time
 
 from fastapi import FastAPI
-from sqlalchemy import select, text
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select, text
 
 from app.config import settings
 from app.database import Base, SessionLocal, engine
@@ -56,7 +61,6 @@ app.include_router(orders.router)
 app.include_router(reconciliation.router)
 
 
-
 @app.on_event("startup")
 def initialize_auth():
     if settings.testing:
@@ -64,33 +68,46 @@ def initialize_auth():
     Base.metadata.create_all(bind=engine)
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS guest_id VARCHAR;"))
-        conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS placed_at TIMESTAMP WITH TIME ZONE;"))
+        conn.execute(
+            text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS placed_at TIMESTAMP WITH TIME ZONE;")
+        )
         conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS items JSON;"))
         conn.execute(text("ALTER TABLE orders DROP COLUMN IF EXISTS created_at;"))
-        conn.execute(text("ALTER TABLE spa_appointments ADD COLUMN IF NOT EXISTS guest_id VARCHAR;"))
-        conn.execute(text("ALTER TABLE spa_appointments ADD COLUMN IF NOT EXISTS guest_email VARCHAR;"))
-        conn.execute(text("ALTER TABLE spa_appointments ADD COLUMN IF NOT EXISTS guest_name VARCHAR;"))
+        conn.execute(
+            text("ALTER TABLE spa_appointments ADD COLUMN IF NOT EXISTS guest_id VARCHAR;")
+        )
+        conn.execute(
+            text("ALTER TABLE spa_appointments ADD COLUMN IF NOT EXISTS guest_email VARCHAR;")
+        )
+        conn.execute(
+            text("ALTER TABLE spa_appointments ADD COLUMN IF NOT EXISTS guest_name VARCHAR;")
+        )
 
     from app.seed import seed_if_empty
+
     seed_if_empty()
 
     with SessionLocal() as session:
         if session.scalar(select(User).where(User.username == "staff")) is None:
-            session.add(User(
-                id="U-STAFF-001",
-                username="staff",
-                password_hash=hash_password("staff123"),
-                role=UserRole.staff,
-            ))
+            session.add(
+                User(
+                    id="U-STAFF-001",
+                    username="staff",
+                    password_hash=hash_password("staff123"),
+                    role=UserRole.staff,
+                )
+            )
         guest_user = session.scalar(select(User).where(User.username == "guest"))
         if guest_user is None:
-            session.add(User(
-                id="U-GUEST-001",
-                username="guest",
-                password_hash=hash_password("guest123"),
-                role=UserRole.guest,
-                guest_id="G-1001",
-            ))
+            session.add(
+                User(
+                    id="U-GUEST-001",
+                    username="guest",
+                    password_hash=hash_password("guest123"),
+                    role=UserRole.guest,
+                    guest_id="G-1001",
+                )
+            )
         elif not guest_user.guest_id:
             guest_user.guest_id = "G-1001"
         if session.scalar(select(SpaAppointment).limit(1)) is None:
@@ -103,17 +120,21 @@ def initialize_auth():
                 ("SPA-005", "P-005", "Couples Ocean Reset", "Sofia Laurent", time(15, 30)),
                 ("SPA-006", "P-006", "Moonlit Recovery Treatment", "Daniel Kim", time(17, 0)),
             ]
-            session.add_all([
-                SpaAppointment(
-                    id=appointment_id,
-                    property_id=property_id,
-                    service=service,
-                    starts_at=datetime.combine(today, starts_at, tzinfo=UTC).replace(tzinfo=None),
-                    therapist=therapist,
-                    status=SpaAppointmentStatus.confirmed,
-                )
-                for appointment_id, property_id, service, therapist, starts_at in appointments
-            ])
+            session.add_all(
+                [
+                    SpaAppointment(
+                        id=appointment_id,
+                        property_id=property_id,
+                        service=service,
+                        starts_at=datetime.combine(today, starts_at, tzinfo=UTC).replace(
+                            tzinfo=None
+                        ),
+                        therapist=therapist,
+                        status=SpaAppointmentStatus.confirmed,
+                    )
+                    for appointment_id, property_id, service, therapist, starts_at in appointments
+                ]
+            )
         prop_names = {
             "P-001": "Meridian Azure Cove",
             "P-002": "Meridian Palm Bay",
@@ -123,6 +144,7 @@ def initialize_auth():
             "P-006": "Meridian Sunset Cliffs",
         }
         from app.models.property import Property
+
         for pid, pname in prop_names.items():
             p_obj = session.scalar(select(Property).where(Property.id == pid))
             if p_obj:

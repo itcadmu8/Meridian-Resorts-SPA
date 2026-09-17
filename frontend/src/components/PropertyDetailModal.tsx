@@ -1,3 +1,7 @@
+/**
+ * @file PropertyDetailModal.tsx
+ * @description React component for PropertyDetailModal.
+ */
 import React from 'react';
 import { PropertyCoverData } from '../types';
 import { X, MapPin, User, Users, Utensils, Award } from 'lucide-react';

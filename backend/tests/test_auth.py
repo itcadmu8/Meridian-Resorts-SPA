@@ -1,5 +1,10 @@
-from app.models import Guest, User, UserRole
+"""
+test_auth.py
+
+Unit/Integration test suite for auth.
+"""
 from app.dependencies.auth import hash_password
+from app.models import Guest, User, UserRole
 
 
 def create_users(db_session):
@@ -8,8 +13,17 @@ def create_users(db_session):
     db_session.flush()
     db_session.add_all(
         [
-            User(username="operations", password_hash=hash_password("meridian2026"), role=UserRole.staff),
-            User(username=guest.email, password_hash=hash_password("guest123"), role=UserRole.guest, guest_id=guest.id),
+            User(
+                username="operations",
+                password_hash=hash_password("meridian2026"),
+                role=UserRole.staff,
+            ),
+            User(
+                username=guest.email,
+                password_hash=hash_password("guest123"),
+                role=UserRole.guest,
+                guest_id=guest.id,
+            ),
         ]
     )
     db_session.commit()
@@ -17,7 +31,9 @@ def create_users(db_session):
 
 def test_staff_login_returns_bearer_token(client, db_session):
     create_users(db_session)
-    response = client.post("/api/v1/auth/login", json={"username": "operations", "password": "meridian2026"})
+    response = client.post(
+        "/api/v1/auth/login", json={"username": "operations", "password": "meridian2026"}
+    )
     assert response.status_code == 200
     assert response.json()["user"]["role"] == "STAFF"
     assert response.json()["access_token"]
@@ -25,13 +41,17 @@ def test_staff_login_returns_bearer_token(client, db_session):
 
 def test_invalid_staff_login_is_rejected(client, db_session):
     create_users(db_session)
-    response = client.post("/api/v1/auth/login", json={"username": "operations", "password": "wrong"})
+    response = client.post(
+        "/api/v1/auth/login", json={"username": "operations", "password": "wrong"}
+    )
     assert response.status_code == 401
 
 
 def test_guest_login_accepts_guest_email_and_me_returns_identity(client, db_session):
     create_users(db_session)
-    response = client.post("/api/v1/auth/guest/login", json={"username": "jamie@example.com", "password": "guest123"})
+    response = client.post(
+        "/api/v1/auth/guest/login", json={"username": "jamie@example.com", "password": "guest123"}
+    )
     token = response.json()["access_token"]
     me = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200

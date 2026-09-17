@@ -1,3 +1,7 @@
+/**
+ * @file MyStaySection.tsx
+ * @description UI component for guest experience MyStaySection.
+ */
 import React from 'react';
 import { Compass, Key, MessageSquare, ArrowRight } from 'lucide-react';
 

@@ -1,3 +1,7 @@
+/**
+ * @file DiningModal.tsx
+ * @description UI component for guest experience DiningModal.
+ */
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Clock, MapPin, Shirt, Sparkles, Utensils, Calendar } from 'lucide-react';

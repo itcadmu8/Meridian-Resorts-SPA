@@ -1,5 +1,9 @@
-from datetime import date, timedelta
+"""
+seed_data.py
 
+Module responsible for seed data.
+"""
+from datetime import date, timedelta
 
 PROPERTIES = {
     1: "Meridian Grand Resort",

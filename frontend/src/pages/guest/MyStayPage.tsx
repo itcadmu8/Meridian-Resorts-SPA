@@ -1,3 +1,7 @@
+/**
+ * @file MyStayPage.tsx
+ * @description Page view component for MyStayPage.
+ */
 import React, { useEffect, useState } from 'react';
 import { getReservations, getGuestSpaAppointments, SpaAppointmentResult } from '../../services/api';
 

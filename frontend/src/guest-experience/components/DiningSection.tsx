@@ -1,3 +1,7 @@
+/**
+ * @file DiningSection.tsx
+ * @description UI component for guest experience DiningSection.
+ */
 import React, { useState } from 'react';
 import { Sparkles, ArrowRight, Clock, MapPin, Shirt } from 'lucide-react';
 import { RESTAURANTS } from '../data/dining';

@@ -1,3 +1,7 @@
+/**
+ * @file ArrivalsView.tsx
+ * @description React component for ArrivalsView.
+ */
 import React, { useState } from 'react';
 import { Briefcase, Plane, Star, Clock, CheckCircle2 } from 'lucide-react';
 

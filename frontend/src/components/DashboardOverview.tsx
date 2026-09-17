@@ -1,3 +1,7 @@
+/**
+ * @file DashboardOverview.tsx
+ * @description React component for DashboardOverview.
+ */
 import React from 'react';
 import { PropertyCoverData } from '../types';
 import {

@@ -1,3 +1,7 @@
+/**
+ * @file AccommodationCard.tsx
+ * @description UI component for guest experience AccommodationCard.
+ */
 import React from 'react';
 import { Users, BedDouble, Eye, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { Accommodation } from '../types';

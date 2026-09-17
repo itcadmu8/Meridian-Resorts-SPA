@@ -1,3 +1,7 @@
+/**
+ * @file types.ts
+ * @description Global TypeScript interface definitions and data types.
+ */
 export type ViewMode = 'live' | 'skeleton' | 'error' | 'empty';
 
 export type NavTab = 

@@ -1,3 +1,7 @@
+/**
+ * @file authApi.js
+ * @description API client service for auth requests and backend communication.
+ */
 import client from './client'
 
 function unwrap(payload) {

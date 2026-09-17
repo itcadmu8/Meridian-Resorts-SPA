@@ -1,3 +1,7 @@
+/**
+ * @file BookingConfirmation.tsx
+ * @description Page view component for BookingConfirmation.
+ */
 import React from 'react';
 
 export default function BookingConfirmation({ bookingId, onNavigate }: { bookingId: string; onNavigate: (path: string) => void }) {

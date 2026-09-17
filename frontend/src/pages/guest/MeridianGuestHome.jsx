@@ -1,3 +1,7 @@
+/**
+ * @file MeridianGuestHome.jsx
+ * @description Page view component for MeridianGuestHome.
+ */
 import { useEffect, useState } from 'react'
 
 import AiChatWidget from '../../components/ai/AiChatWidget'

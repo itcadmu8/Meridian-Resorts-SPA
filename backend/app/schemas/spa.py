@@ -49,6 +49,7 @@ class TodaySpaBookings(BaseModel):
 
 class TodaySpaBookingsResponse(TodaySpaBookings):
     """Alias for TodaySpaBookings to support clear API documentation."""
+
     pass
 
 

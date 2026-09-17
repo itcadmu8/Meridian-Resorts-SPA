@@ -1,3 +1,7 @@
+/**
+ * @file dashboardApi.js
+ * @description API client service for dashboard requests and backend communication.
+ */
 import client from './client';
 
 export async function fetchOperationsDashboard(date = null) {

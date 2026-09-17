@@ -1,3 +1,7 @@
+/**
+ * @file JournalModal.tsx
+ * @description UI component for guest experience JournalModal.
+ */
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Clock, Calendar, User, Sparkles } from 'lucide-react';

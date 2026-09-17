@@ -1,3 +1,8 @@
+"""
+test_ai.py
+
+Unit/Integration test suite for ai.
+"""
 def test_ai_chat_endpoint(client):
     payload = {
         "message": "What dining options do you have in the Maldives property?",

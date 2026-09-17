@@ -1,3 +1,7 @@
+/**
+ * @file Hero.tsx
+ * @description UI component for guest experience Hero.
+ */
 import React from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, ArrowRight } from 'lucide-react';

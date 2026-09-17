@@ -1,3 +1,7 @@
+/**
+ * @file StaffDashboardModal.tsx
+ * @description UI component for guest experience StaffDashboardModal.
+ */
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Briefcase, CheckCircle2, Clock, Users, BedDouble, Sparkles, Bell } from 'lucide-react';

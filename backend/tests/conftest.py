@@ -1,3 +1,8 @@
+"""
+conftest.py
+
+Unit/Integration test suite for conftest.
+"""
 import os
 
 # Must be set before `app.main` is imported, so app.config.settings.testing is True

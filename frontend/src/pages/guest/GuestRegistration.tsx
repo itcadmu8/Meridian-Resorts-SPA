@@ -1,3 +1,7 @@
+/**
+ * @file GuestRegistration.tsx
+ * @description Page view component for GuestRegistration.
+ */
 import React, { useState } from 'react';
 
 export default function GuestRegistration({ onNavigate }: { onNavigate: (path: string) => void }) {

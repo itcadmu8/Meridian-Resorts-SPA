@@ -1,3 +1,7 @@
+/**
+ * @file BookingFlowModal.tsx
+ * @description UI component for guest experience BookingFlowModal.
+ */
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Calendar, Users, Compass, Check, Sparkles, CreditCard, ShieldCheck } from 'lucide-react';

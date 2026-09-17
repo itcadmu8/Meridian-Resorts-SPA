@@ -1,3 +1,7 @@
+/**
+ * @file Sidebar.tsx
+ * @description React component for Sidebar.
+ */
 import React from 'react';
 import { 
   LayoutDashboard, 

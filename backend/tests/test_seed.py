@@ -7,12 +7,13 @@ instead of using dependency_overrides.
 
 from app import models
 from app.seed import seed_if_empty
-from tests.conftest import FakePreferencesCollection, TestingSessionLocal
+from tests.conftest import FakePreferencesCollection, TestingSessionLocal, engine
 
 
 def _patch_seed_targets(monkeypatch, preferences_store):
     import app.seed as seed_module
 
+    monkeypatch.setattr(seed_module, "engine", engine)
     monkeypatch.setattr(seed_module, "SessionLocal", TestingSessionLocal)
     monkeypatch.setattr(
         seed_module,
@@ -25,6 +26,8 @@ def test_seed_if_empty_populates_demo_data(db_session, preferences_store, monkey
     _patch_seed_targets(monkeypatch, preferences_store)
 
     seed_if_empty()
+    db_session.close()
+    db_session = TestingSessionLocal()
 
     guests = db_session.query(models.Guest).all()
     assert len(guests) >= 20
@@ -41,9 +44,9 @@ def test_seed_if_empty_populates_demo_data(db_session, preferences_store, monkey
 
     folios = db_session.query(models.Folio).all()
     assert len(folios) >= 12
-    assert {folio.reservation_id for folio in folios}.issubset({
-        reservation.id for reservation in reservations
-    })
+    assert {folio.reservation_id for folio in folios}.issubset(
+        {reservation.id for reservation in reservations}
+    )
 
     orders = db_session.query(models.Order).all()
     assert len(orders) >= 12
@@ -57,11 +60,15 @@ def test_seed_if_empty_is_idempotent(db_session, preferences_store, monkeypatch)
     _patch_seed_targets(monkeypatch, preferences_store)
 
     seed_if_empty()
+    db_session.close()
+    db_session = TestingSessionLocal()
     cnt_guests = db_session.query(models.Guest).count()
     cnt_res = db_session.query(models.Reservation).count()
     cnt_orders = db_session.query(models.Order).count()
 
     seed_if_empty()  # a second call (e.g. container restart) must not duplicate data
+    db_session.close()
+    db_session = TestingSessionLocal()
 
     assert db_session.query(models.Guest).count() == cnt_guests
     assert db_session.query(models.Reservation).count() == cnt_res

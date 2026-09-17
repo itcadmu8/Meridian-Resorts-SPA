@@ -1,3 +1,7 @@
+/**
+ * @file ArrivalShareDonut.tsx
+ * @description React component for ArrivalShareDonut.
+ */
 import React, { useState } from 'react';
 import { PropertyArrivalStats } from '../types';
 

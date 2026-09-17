@@ -1,3 +1,7 @@
+/**
+ * @file dining.ts
+ * @description Mock data and static configuration for dining.
+ */
 import { Restaurant } from '../types';
 
 export const RESTAURANTS: Restaurant[] = [

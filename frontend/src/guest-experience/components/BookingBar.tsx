@@ -1,3 +1,7 @@
+/**
+ * @file BookingBar.tsx
+ * @description UI component for guest experience BookingBar.
+ */
 import React, { useState } from 'react';
 import { Calendar, Users, MapPin, Search } from 'lucide-react';
 import { RESORTS } from '../data/resorts';

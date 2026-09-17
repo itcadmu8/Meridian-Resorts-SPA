@@ -1,3 +1,7 @@
+/**
+ * @file DownloadedLogin.tsx
+ * @description Page view component for DownloadedLogin.
+ */
 import React, { useRef } from 'react';
 import { LoginExperience } from '../../guest-experience/components/LoginExperience';
 import { useAuth } from '../../hooks/useAuth';

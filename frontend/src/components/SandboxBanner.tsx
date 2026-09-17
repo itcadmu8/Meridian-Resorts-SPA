@@ -1,3 +1,7 @@
+/**
+ * @file SandboxBanner.tsx
+ * @description React component for SandboxBanner.
+ */
 import React from 'react';
 import { ViewState } from '../types';
 import { RotateCcw, Sparkles } from 'lucide-react';

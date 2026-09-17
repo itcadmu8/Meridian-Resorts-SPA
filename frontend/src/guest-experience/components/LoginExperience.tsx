@@ -1,3 +1,7 @@
+/**
+ * @file LoginExperience.tsx
+ * @description UI component for guest experience LoginExperience.
+ */
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Compass, User, Briefcase, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';

@@ -1,3 +1,7 @@
+/**
+ * @file JournalSection.tsx
+ * @description UI component for guest experience JournalSection.
+ */
 import React, { useState } from 'react';
 import { Sparkles, ArrowRight, Clock } from 'lucide-react';
 import { JOURNAL_ARTICLES } from '../data/journal';

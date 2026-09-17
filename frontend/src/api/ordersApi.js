@@ -1,3 +1,7 @@
+/**
+ * @file ordersApi.js
+ * @description API client service for orders requests and backend communication.
+ */
 import client from './client'
 
 export async function getOrders({ date, propertyId } = {}) {

@@ -1,3 +1,7 @@
+/**
+ * @file ReportsView.tsx
+ * @description React component for ReportsView.
+ */
 import React, { useState } from 'react';
 import { PropertyCoverData } from '../types';
 import { FileText, Download, Check, Calendar, TrendingUp } from 'lucide-react';

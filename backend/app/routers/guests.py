@@ -1,5 +1,11 @@
+"""
+guests.py
+
+FastAPI router module for guests management. Provides endpoints for GET /guests/{guest_id}.
+"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.guest import Guest
 from app.mongo import get_preferences_collection

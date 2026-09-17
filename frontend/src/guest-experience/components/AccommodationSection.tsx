@@ -1,3 +1,7 @@
+/**
+ * @file AccommodationSection.tsx
+ * @description UI component for guest experience AccommodationSection.
+ */
 import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { ACCOMMODATIONS } from '../data/accommodations';

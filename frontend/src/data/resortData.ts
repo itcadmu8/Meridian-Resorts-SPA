@@ -1,3 +1,7 @@
+/**
+ * @file resortData.ts
+ * @description Frontend module for resortData.
+ */
 import { PropertyCoverData } from '../types';
 
 export const INITIAL_PROPERTIES: PropertyCoverData[] = [

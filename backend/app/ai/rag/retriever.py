@@ -1,9 +1,16 @@
+"""
+retriever.py
+
+AI & RAG module supporting agent workflows, retrieval, or prompt orchestration for retriever.
+"""
 from pathlib import Path
-from typing import Dict, List, Optional
+
 from app.ai.rag.ingestion import load_knowledge_base
 
 
-def retrieve_context(query: str, property_id: Optional[str] = None, knowledge_dir: Optional[Path] = None) -> List[Dict[str, str]]:
+def retrieve_context(
+    query: str, property_id: str | None = None, knowledge_dir: Path | None = None
+) -> list[dict[str, str]]:
     if knowledge_dir is None:
         knowledge_dir = Path(__file__).resolve().parents[4] / "meridian_knowledge"
 

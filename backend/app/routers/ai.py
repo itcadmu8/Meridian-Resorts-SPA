@@ -1,4 +1,10 @@
+"""
+ai.py
+
+FastAPI router module for ai management. Provides endpoints for POST /api/v1/ai/chat, POST /api/v1/chat.
+"""
 from fastapi import APIRouter, HTTPException
+
 from app.schemas.ai import ChatRequest, ChatResponse
 from app.services import ai_service
 

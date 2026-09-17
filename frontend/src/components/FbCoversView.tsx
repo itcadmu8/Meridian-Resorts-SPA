@@ -1,3 +1,7 @@
+/**
+ * @file FbCoversView.tsx
+ * @description React component for FbCoversView.
+ */
 import React, { useState, useMemo, useEffect } from 'react';
 import { PropertyCoverData, ViewState, SortColumn, SortDirection } from '../types';
 import {

@@ -1,3 +1,7 @@
+/**
+ * @file ResortCard.tsx
+ * @description UI component for guest experience ResortCard.
+ */
 import React from 'react';
 import { MapPin, ArrowRight, Sparkles } from 'lucide-react';
 import { Resort } from '../types';

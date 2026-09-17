@@ -1,3 +1,7 @@
+/**
+ * @file spa.ts
+ * @description Mock data and static configuration for spa.
+ */
 import { SpaExperience, WellnessFacility } from '../types';
 
 export const SPA_EXPERIENCES: SpaExperience[] = [

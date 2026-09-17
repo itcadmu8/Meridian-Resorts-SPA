@@ -1,3 +1,8 @@
+"""
+test_dashboard.py
+
+Unit/Integration test suite for dashboard.
+"""
 def test_get_operations_dashboard(client):
     response = client.get("/api/v1/dashboard/operations")
     assert response.status_code == 200

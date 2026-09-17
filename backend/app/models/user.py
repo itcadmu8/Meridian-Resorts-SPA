@@ -1,18 +1,25 @@
-from enum import Enum
-import uuid
+"""User ORM model representing staff and guest authentication identities."""
 
-from sqlalchemy import Boolean, Enum as SqlEnum, String
+import uuid
+from enum import StrEnum
+
+from sqlalchemy import Boolean, String
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
+    """Supported user authorization roles within the Meridian system."""
+
     guest = "GUEST"
     staff = "STAFF"
 
 
 class User(Base):
+    """Database entity representing an authorized system user."""
+
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

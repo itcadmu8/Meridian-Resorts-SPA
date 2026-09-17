@@ -1,3 +1,7 @@
+/**
+ * @file Header.tsx
+ * @description React component for Header.
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import { RESORT_HERO_IMAGE } from '../data/resortData';
 import { Calendar, ChevronDown, Menu, User, ShieldCheck, Clock, Bell } from 'lucide-react';

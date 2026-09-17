@@ -1,3 +1,7 @@
+/**
+ * @file SpaBookingsExperience.tsx
+ * @description Page view component for SpaBookingsExperience.
+ */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Download, Plus, RefreshCw, Search, Sparkles } from 'lucide-react';
 import client from '../../api/client';

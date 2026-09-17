@@ -1,3 +1,8 @@
+"""
+__init__.py
+
+SQLAlchemy / Pydantic data models for __init__.
+"""
 from .folio import Folio, FolioStatus
 from .guest import Guest
 from .inventory import MultiPropertyInventory
@@ -25,4 +30,3 @@ __all__ = [
     "User",
     "UserRole",
 ]
-

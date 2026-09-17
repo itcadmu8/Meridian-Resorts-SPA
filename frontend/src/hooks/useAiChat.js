@@ -1,3 +1,7 @@
+/**
+ * @file useAiChat.js
+ * @description Custom React hook for managing AiChat state and operations.
+ */
 import { useState } from 'react'
 
 import { sendAiMessage } from '../api/aiApi'

@@ -1,3 +1,8 @@
+"""
+test_folios.py
+
+Unit/Integration test suite for folios.
+"""
 from tests.factories import make_folio, make_property_guest_plan, make_reservation
 
 

@@ -1,3 +1,8 @@
+"""
+test_api_endpoints.py
+
+Module responsible for test api endpoints.
+"""
 import urllib.request
 import urllib.parse
 import json
