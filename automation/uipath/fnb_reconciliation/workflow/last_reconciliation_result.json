@@ -1,0 +1,67 @@
+{
+  "operating_date": "2026-09-17",
+  "total_properties": 6,
+  "total_flagged": 6,
+  "items": [
+    {
+      "operating_date": "2026-09-17",
+      "property_id": "P-001",
+      "property_name": "Meridian Azure Cove",
+      "actual_covers": 113,
+      "expected_occupancy": 0,
+      "variance": 113,
+      "variance_percent": null,
+      "flagged": true
+    },
+    {
+      "operating_date": "2026-09-17",
+      "property_id": "P-002",
+      "property_name": "Meridian Palm Bay",
+      "actual_covers": 103,
+      "expected_occupancy": 0,
+      "variance": 103,
+      "variance_percent": null,
+      "flagged": true
+    },
+    {
+      "operating_date": "2026-09-17",
+      "property_id": "P-003",
+      "property_name": "Meridian Coral Sands",
+      "actual_covers": 95,
+      "expected_occupancy": 0,
+      "variance": 95,
+      "variance_percent": null,
+      "flagged": true
+    },
+    {
+      "operating_date": "2026-09-17",
+      "property_id": "P-004",
+      "property_name": "Meridian Ocean Pearl",
+      "actual_covers": 89,
+      "expected_occupancy": 0,
+      "variance": 89,
+      "variance_percent": null,
+      "flagged": true
+    },
+    {
+      "operating_date": "2026-09-17",
+      "property_id": "P-005",
+      "property_name": "Meridian Rainforest Sanctuary",
+      "actual_covers": 83,
+      "expected_occupancy": 0,
+      "variance": 83,
+      "variance_percent": null,
+      "flagged": true
+    },
+    {
+      "operating_date": "2026-09-17",
+      "property_id": "P-006",
+      "property_name": "Meridian Sunset Cliffs",
+      "actual_covers": 75,
+      "expected_occupancy": 0,
+      "variance": 75,
+      "variance_percent": null,
+      "flagged": true
+    }
+  ]
+}

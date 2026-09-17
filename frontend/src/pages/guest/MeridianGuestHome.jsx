@@ -25,12 +25,17 @@ export default function MeridianGuestHome({ onNavigate }) {
   const [isAiOpen, setIsAiOpen] = useState(() => window.localStorage.getItem('open_ai_after_login') === 'true')
 
   useEffect(() => {
-    if (isAuthenticated && window.localStorage.getItem('open_ai_after_login') === 'true') window.localStorage.removeItem('open_ai_after_login')
+    const params = new URLSearchParams(window.location.search)
+    if ((params.get('openAi') === '1' || window.localStorage.getItem('open_ai_after_login') === 'true') && isAuthenticated) {
+      setIsAiOpen(true)
+      window.localStorage.removeItem('open_ai_after_login')
+    }
   }, [isAuthenticated])
 
   function handleAiClick() {
     if (!isAuthenticated || user?.role !== 'GUEST') {
-      onNavigate('/guest/login')
+      window.localStorage.setItem('open_ai_after_login', 'true')
+      onNavigate('/guest/login?redirect=/guest&openAi=1')
       return
     }
     setIsAiOpen((open) => !open)

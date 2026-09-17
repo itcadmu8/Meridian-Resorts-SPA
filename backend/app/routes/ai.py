@@ -3,10 +3,11 @@ from fastapi import APIRouter, HTTPException
 from app.schemas.ai import ChatRequest, ChatResponse
 from app.services import ai_service
 
-router = APIRouter(prefix="/api/v1", tags=["ai"])
+router = APIRouter(tags=["ai"])
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/api/v1/ai/chat", response_model=ChatResponse)
+@router.post("/api/v1/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     history = [turn.model_dump() for turn in request.history]
 

@@ -48,80 +48,52 @@ backend/                    FastAPI application, database models, routers, and t
 frontend/                   React + Vite application written in JavaScript and JSX
 meridian_knowledge/         Property spa, dining, hours, and overview source documents
 automation/uipath/          F&B reconciliation workflow assets and notes
-docker-compose.yml          Local PostgreSQL, MongoDB, backend, and frontend services
-.env.example                Optional local environment overrides
+.env.example                Environment template
 ```
 
 ## Prerequisites
 
-- Docker Engine with Docker Compose v2
-- Node.js 22+ and npm for frontend development outside Docker
-- Python 3.12+ and [uv](https://docs.astral.sh/uv/) for backend development outside Docker
+- Node.js 22+ and npm for frontend development
+- Python 3.12+ and [uv](https://docs.astral.sh/uv/) (or `pip`) for backend development
+- PostgreSQL and MongoDB instances (local services or cloud URIs)
 
 ## Clone and start
 
-Clone the repository and start the full local stack:
+1. **Clone the repository:**
 
-```bash
-git clone https://github.com/itcadmu8/Meridian-Resorts-SPA.git
-cd Meridian-Resorts-SPA
-docker compose up --build
-```
+   ```bash
+   git clone https://github.com/itcadmu8/Meridian-Resorts-SPA.git
+   cd Meridian-Resorts-SPA
+   ```
 
-After the services are healthy, open:
+2. **Configure environment:**
 
-- Frontend: <http://localhost:5173>
-- API documentation: <http://localhost:8000/docs>
-- Health check: <http://localhost:8000/health>
+   ```bash
+   cp .env.example .env
+   ```
 
-Stop the local stack with:
+3. **Start the Backend:**
 
-```bash
-docker compose down
-```
+   ```bash
+   cd backend
+   uv sync --group dev
+   uv run uvicorn app.main:app --reload --port 8000
+   ```
 
-## Run the application
+4. **Start the Frontend:**
 
-The committed Compose defaults work without a `.env` file:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-```bash
-docker compose up --build
-```
+5. **Open local services:**
 
-For a detached process:
+   - Frontend: <http://localhost:5173>
+   - API documentation: <http://localhost:8000/docs>
+   - Health check: <http://localhost:8000/health>
 
-```bash
-docker compose up --build -d
-docker compose ps
-```
-
-Local services:
-
-- Frontend: <http://localhost:5173>
-- API: <http://localhost:8000>
-- API documentation: <http://localhost:8000/docs>
-- Health check: <http://localhost:8000/health>
-
-View logs or stop the stack:
-
-```bash
-docker compose logs -f
-docker compose down
-```
-
-`docker compose down` preserves local database volumes. Do not use `-v` unless
-you intentionally want to delete all local PostgreSQL and MongoDB data.
-
-### Environment overrides
-
-Create a local environment file only when you need to override ports or database
-settings:
-
-```bash
-cp .env.example .env
-```
-
-Never commit `.env`, passwords, API keys, access tokens, or other secrets.
 
 ## Seed data
 

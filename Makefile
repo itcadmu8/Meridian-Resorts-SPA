@@ -1,16 +1,7 @@
-.PHONY: up down logs seed test lint sync
-
-up:
-	docker compose up --build
-
-down:
-	docker compose down
-
-logs:
-	docker compose logs -f
+.PHONY: seed test lint sync
 
 seed:
-	docker compose exec backend python -m app.seed
+	cd backend && uv run python -m app.seed
 
 sync:
 	cd backend && uv sync --group dev
@@ -20,3 +11,4 @@ test: sync
 
 lint: sync
 	cd backend && uv run ruff check app tests
+

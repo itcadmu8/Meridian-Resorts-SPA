@@ -34,6 +34,8 @@ import BookingPage from './pages/guest/BookingPage';
 import BookingConfirmation from './pages/guest/BookingConfirmation';
 import MyStayPage from './pages/guest/MyStayPage';
 
+import { useOperationsDashboard } from './hooks/useOperationsDashboard';
+
 function dateInputValue(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -75,6 +77,15 @@ export default function App() {
   const [fnbViewState, setFnbViewState] = useState<ViewState>('normal');
   const [fnbProperties] = useState<PropertyCoverData[]>(INITIAL_PROPERTIES);
   const [selectedPropertyDetails, setSelectedPropertyDetails] = useState<PropertyCoverData | null>(null);
+
+  // Live Operations Dashboard telemetry from FastAPI backend
+  const { data: dashboardData, refetch: refetchDashboard } = useOperationsDashboard(selectedDate);
+  const activeProperties = useMemo<PropertyCoverData[]>(() => {
+    if (dashboardData?.properties?.length) {
+      return dashboardData.properties as PropertyCoverData[];
+    }
+    return fnbProperties;
+  }, [dashboardData, fnbProperties]);
 
   // Interactive selected reservation for modal view
   const [selectedReservation, setSelectedReservation] = useState<ArrivalReservation | null>(null);
@@ -257,7 +268,7 @@ export default function App() {
       navigate(target);
     }} />;
   }
-  if (currentPath === '/booking') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingPage onNavigate={navigate} /></ProtectedRoute>;
+  if (currentPath === '/booking') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingPage onNavigate={(path) => { refetchDashboard(); navigate(path); }} /></ProtectedRoute>;
   if (currentPath.startsWith('/booking/confirmation/')) return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/login?redirect=/booking')}><BookingConfirmation bookingId={currentPath.split('/').pop() || ''} onNavigate={navigate} /></ProtectedRoute>;
   if (currentPath === '/profile' || currentPath === '/my-stay') return <ProtectedRoute role="GUEST" onNavigate={() => navigate('/guest/login?redirect=/profile')}><MyStayPage onNavigate={navigate} /></ProtectedRoute>;
 
@@ -307,7 +318,8 @@ export default function App() {
           {/* Tab Views */}
           {activeTab === 'dashboard' ? (
             <DashboardOverview
-              properties={fnbProperties}
+              properties={activeProperties}
+              summary={dashboardData?.summary}
               onNavigateToFb={() => setActiveTab('fb-covers')}
               onSelectProperty={(property) => setSelectedProperty(property.name)}
             />
@@ -315,7 +327,7 @@ export default function App() {
             <FbCoversView
               viewState={fnbViewState}
               onViewStateChange={setFnbViewState}
-              properties={fnbProperties}
+              properties={activeProperties}
               onSelectProperty={(_property) => undefined}
             />
           ) : activeTab === 'arrivals' ? (
@@ -390,12 +402,13 @@ export default function App() {
               )}
             </div>
           ) : activeTab === 'spa-bookings' ? (
-            <SpaBookingsExperience />
+            <SpaBookingsExperience selectedDate={selectedDate} onSpaBooked={refetchDashboard} />
           ) : activeTab === 'properties' ? (
-            <PropertiesView properties={fnbProperties} onSelectProperty={setSelectedPropertyDetails} />
+            <PropertiesView properties={activeProperties} onSelectProperty={setSelectedPropertyDetails} />
           ) : (
             <DashboardOverview
-              properties={fnbProperties}
+              properties={activeProperties}
+              summary={dashboardData?.summary}
               onNavigateToFb={() => setActiveTab('fb-covers')}
               onSelectProperty={(property) => setSelectedProperty(property.name)}
             />

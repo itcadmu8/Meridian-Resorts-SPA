@@ -24,4 +24,7 @@ class SpaAppointment(Base):
 	status: Mapped[SpaAppointmentStatus] = mapped_column(
 		SqlEnum(SpaAppointmentStatus), default=SpaAppointmentStatus.confirmed, nullable=False
 	)
+	guest_id: Mapped[str | None] = mapped_column(String, nullable=True)
+	guest_email: Mapped[str | None] = mapped_column(String, nullable=True)
+	guest_name: Mapped[str | None] = mapped_column(String, nullable=True)
 	property = relationship("Property")

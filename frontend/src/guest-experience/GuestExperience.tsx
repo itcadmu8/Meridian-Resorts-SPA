@@ -169,7 +169,7 @@ export default function App({ onNavigate = () => {} }: { onNavigate?: (path: str
 
       {/* Global Header */}
       <Header
-        onOpenLogin={() => window.location.assign('/login')}
+        onOpenLogin={() => setIsLoginOpen(true)}
         onOpenMyStay={() => onNavigate('/profile')}
         onBookNow={() => window.location.assign(sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
       />
@@ -235,7 +235,7 @@ export default function App({ onNavigate = () => {} }: { onNavigate?: (path: str
         onGuestCredentials={(username, password) => signIn({ username, password, role: 'GUEST' })}
         onStaffCredentials={async (username, password) => {
           await signIn({ username, password, role: 'STAFF' });
-          window.location.assign('/');
+          onNavigate('/staff/dashboard');
         }}
         onGuestLoginSuccess={handleGuestLoginSuccess}
         onStaffLoginSuccess={handleStaffLoginSuccess}

@@ -1,5 +1,8 @@
+import json
 from pathlib import Path
+from typing import Any
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,15 +41,29 @@ class Settings(BaseSettings):
     seed_on_startup: bool = True
     default_property_capacity: int = 20
     cors_origins: list[str] = [
+        "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:5174",
+        "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
     ]
 
-    # AI concierge chatbot (Google Gemini)
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-3.6-flash"
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [i.strip() for i in v.split(",") if i.strip()]
+        return v
+
+    # AI concierge chatbot (OpenAI)
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
 
     # Set to true only by the test suite (see tests/conftest.py) to skip touching
     # the real Postgres/Mongo services during startup.

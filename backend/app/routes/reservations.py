@@ -1,9 +1,10 @@
 from datetime import date
 
-from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import and_, select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.models.guest import Guest
 from app.models.property import Property
 from app.models.reservation import Reservation
@@ -17,12 +18,8 @@ def list_reservations(
     status: str | None = Query(default=None),
     date_from: date | None = Query(default=None),
     date_to: date | None = Query(default=None),
+    db: Session = Depends(get_db),
 ):
-    if date_from is None and date_to is None:
-        today = date.today()
-        date_from = today
-        date_to = today
-
     stmt = (
         select(
             Reservation.id,
@@ -40,9 +37,12 @@ def list_reservations(
         )
         .join(Guest, Guest.id == Reservation.guest_id)
         .join(Property, Property.id == Reservation.property_id)
-        .where(Reservation.check_in >= date_from)
-        .where(Reservation.check_in <= date_to)
     )
+
+    if date_from is not None:
+        stmt = stmt.where(Reservation.check_in >= date_from)
+    if date_to is not None:
+        stmt = stmt.where(Reservation.check_in <= date_to)
 
     if property_id is not None:
         stmt = stmt.where(Reservation.property_id == property_id)
@@ -50,8 +50,7 @@ def list_reservations(
     if status is not None:
         stmt = stmt.where(Reservation.status.ilike(status))
 
-    with SessionLocal() as session:
-        rows = session.execute(stmt).mappings().all()
+    rows = db.execute(stmt).mappings().all()
 
     payload = []
     for row in rows:
@@ -65,7 +64,7 @@ def list_reservations(
                 'loyalty_tier': row['loyalty_tier'],
                 'check_in': row['check_in'].isoformat(),
                 'check_out': row['check_out'].isoformat(),
-                'status': row['status'].title(),
+                'status': str(row['status']).lower(),
                 'room_number': row['room_number'],
                 'room_type': row['room_type'],
                 'special_preference': row['special_preference'],
@@ -75,16 +74,52 @@ def list_reservations(
     return payload
 
 
+@router.post("/reservations", status_code=201)
+def create_reservation(payload: dict, db: Session = Depends(get_db)):
+    guest_id = payload.get("guest_id")
+    property_id = payload.get("property_id")
+    rate_plan_id = payload.get("rate_plan_id")
+    check_in = date.fromisoformat(payload["check_in"])
+    check_out = date.fromisoformat(payload["check_out"])
+
+    guest = db.get(Guest, guest_id)
+    if not guest:
+        raise HTTPException(status_code=400, detail="Guest not found")
+
+    res = Reservation(
+        guest_id=guest_id,
+        property_id=property_id,
+        rate_plan_id=rate_plan_id,
+        check_in=check_in,
+        check_out=check_out,
+        status="confirmed",
+    )
+    db.add(res)
+    db.commit()
+    db.refresh(res)
+    return {
+        "id": res.id,
+        "guest_id": res.guest_id,
+        "property_id": res.property_id,
+        "rate_plan_id": res.rate_plan_id,
+        "check_in": res.check_in.isoformat(),
+        "check_out": res.check_out.isoformat(),
+        "status": res.status,
+    }
+
+
 @router.get("/reservations/{reservation_id}")
-def get_reservation(reservation_id: str):
+def get_reservation(reservation_id: str, db: Session = Depends(get_db)):
     stmt = (
         select(
             Reservation.id,
             Reservation.guest_id,
             Reservation.property_id,
+            Guest.id.label('g_id'),
             Guest.name.label('guest_name'),
-            Property.name.label('property_name'),
+            Guest.email.label('guest_email'),
             Guest.loyalty_tier,
+            Property.name.label('property_name'),
             Reservation.check_in,
             Reservation.check_out,
             Reservation.status,
@@ -97,8 +132,7 @@ def get_reservation(reservation_id: str):
         .where(Reservation.id == reservation_id)
     )
 
-    with SessionLocal() as session:
-        row = session.execute(stmt).mappings().first()
+    row = db.execute(stmt).mappings().first()
 
     if row is None:
         raise HTTPException(status_code=404, detail='Reservation not found')
@@ -112,8 +146,14 @@ def get_reservation(reservation_id: str):
         'loyalty_tier': row['loyalty_tier'],
         'check_in': row['check_in'].isoformat(),
         'check_out': row['check_out'].isoformat(),
-        'status': row['status'].title(),
+        'status': str(row['status']).lower(),
         'room_number': row['room_number'],
         'room_type': row['room_type'],
         'special_preference': row['special_preference'],
+        'guest': {
+            'id': row['g_id'],
+            'name': row['guest_name'],
+            'email': row['guest_email'],
+            'loyalty_tier': row['loyalty_tier'],
+        },
     }

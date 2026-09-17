@@ -27,18 +27,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   return (
     <div 
       id="operations-hero-banner"
-      className="relative rounded-2xl overflow-hidden shadow-sm mb-6 min-h-[140px] flex items-center"
+      className="relative z-20 rounded-2xl shadow-sm mb-6 min-h-[140px] flex items-center"
     >
-      {/* Background Image with Dark Vignette/Overlay */}
-      <img
-        src={resortHeaderImage}
-        alt="Meridian Luxury Resort Overview"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-        referrerPolicy="no-referrer"
-      />
-      
-      {/* Gradient Overlays for optimal text contrast matching the screenshot */}
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-slate-900/40" />
+      {/* Background Image Container with Overflow Hidden for rounded corners */}
+      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+        {/* Background Image with Dark Vignette/Overlay */}
+        <img
+          src={resortHeaderImage}
+          alt="Meridian Luxury Resort Overview"
+          className="w-full h-full object-cover object-center"
+          referrerPolicy="no-referrer"
+        />
+        
+        {/* Gradient Overlays for optimal text contrast matching the screenshot */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-slate-900/40" />
+      </div>
 
       {/* Banner Content Container */}
       <div className="relative z-10 w-full px-6 py-6 sm:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -60,32 +63,74 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               aria-label="Select arrival date"
               aria-expanded={datePickerOpen}
               onClick={() => setDatePickerOpen((open) => !open)}
-              className="flex items-center space-x-2 bg-slate-900/65 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-lg text-white text-xs font-medium shadow-xs hover:bg-slate-900/85 transition-colors"
+              className="flex items-center space-x-2 bg-slate-900/65 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-lg text-white text-xs font-medium shadow-xs hover:bg-slate-900/85 transition-colors cursor-pointer"
             >
-            <Calendar className="w-3.5 h-3.5 text-teal-300" />
-            <span>{currentDate}</span>
+              <Calendar className="w-3.5 h-3.5 text-teal-300" />
+              <span>{currentDate}</span>
             </button>
             {datePickerOpen && (
-              <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-3 text-slate-800 shadow-xl">
-                <label className="grid gap-1 text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Select arrival date
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setDatePickerOpen(false)}
+                />
+                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 text-slate-800 shadow-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Select arrival date
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setDatePickerOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors text-xs font-bold cursor-pointer"
+                      aria-label="Close date picker"
+                    >
+                      ✕
+                    </button>
+                  </div>
                   <input
-                    autoFocus
                     type="date"
                     value={selectedDate}
+                    onClick={(event) => event.currentTarget.showPicker?.()}
                     onChange={(event) => {
-                      onDateChange?.(event.target.value);
-                      setDatePickerOpen(false);
+                      if (event.target.value) {
+                        onDateChange?.(event.target.value);
+                      }
                     }}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-normal normal-case tracking-normal"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:border-teal-600 cursor-pointer"
                   />
-                </label>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  <button type="button" onClick={onPreviousDate} className="rounded-lg border border-slate-300 px-2 py-2 text-xs font-semibold hover:bg-slate-50">Previous</button>
-                  <button type="button" onClick={onToday} className="rounded-lg bg-teal-700 px-2 py-2 text-xs font-semibold text-white hover:bg-teal-800">Today</button>
-                  <button type="button" onClick={onNextDate} className="rounded-lg border border-slate-300 px-2 py-2 text-xs font-semibold hover:bg-slate-50">Next</button>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onPreviousDate?.()}
+                      className="rounded-lg border border-slate-300 px-2 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onToday?.()}
+                      className="rounded-lg bg-teal-700 px-2 py-2 text-xs font-semibold text-white hover:bg-teal-800 transition-colors cursor-pointer"
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onNextDate?.()}
+                      className="rounded-lg border border-slate-300 px-2 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDatePickerOpen(false)}
+                    className="mt-3 w-full rounded-lg bg-slate-900 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    Done
+                  </button>
                 </div>
-              </div>
+              </>
             )}
           </div>
 

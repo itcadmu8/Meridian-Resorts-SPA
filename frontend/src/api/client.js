@@ -1,7 +1,14 @@
-const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-const API_BASE_URL = configuredBaseUrl.endsWith('/api/v1')
-	? configuredBaseUrl
-	: `${configuredBaseUrl.replace(/\/$/, '')}/api/v1`
+const defaultApiHost = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000` : 'http://localhost:8000'
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || defaultApiHost
+const BASE_HOST = rawBaseUrl.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '')
+
+function normalizeUrl(path) {
+	const cleanPath = path.startsWith('/') ? path : `/${path}`
+	if (cleanPath.startsWith('/api/v1/')) {
+		return `${BASE_HOST}${cleanPath}`
+	}
+	return `${BASE_HOST}/api/v1${cleanPath}`
+}
 
 async function request(path, options = {}) {
 	const token = window.sessionStorage.getItem('meridian_access_token')
@@ -15,7 +22,8 @@ async function request(path, options = {}) {
 		headers.set('Authorization', `Bearer ${token}`)
 	}
 
-	const response = await fetch(`${API_BASE_URL}${path}`, {
+	const url = normalizeUrl(path)
+	const response = await fetch(url, {
 		...options,
 		headers,
 	})

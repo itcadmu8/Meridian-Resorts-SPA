@@ -22,7 +22,6 @@ export default function DownloadedLogin({ onNavigate }: DownloadedLoginProps) {
           await signIn({ username, password, role: 'GUEST' });
           window.location.assign(redirect);
         }}
-        onCreateGuestAccount={() => window.location.assign(`/register?redirect=${encodeURIComponent(redirect)}`)}
         onStaffCredentials={async (username, password) => {
           await signIn({ username, password, role: 'STAFF' });
           navigatedAsStaff.current = true;

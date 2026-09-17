@@ -1,1 +1,2 @@
-# Property 01 Overview
+# Meridian Grand Resort - Overview
+Located on a private beachfront peninsula, Meridian Grand Resort features 50 luxury oceanfront villas, multiple infinity pools, a championship golf course, and an award-winning full-service spa facility.

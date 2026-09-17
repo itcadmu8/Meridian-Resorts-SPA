@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Compass, User, Calendar, ChevronRight } from 'lucide-react';
+import { Menu, X, Compass, User, Calendar, ChevronRight, LogOut, Shield } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 interface HeaderProps {
-  onOpenBooking: () => void;
-  onOpenLogin: () => void;
-  onOpenMyStay: () => void;
+  onOpenBooking?: () => void;
+  onOpenLogin?: () => void;
+  onOpenMyStay?: () => void;
+  onBookNow?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenBooking,
   onOpenLogin,
   onOpenMyStay,
+  onBookNow,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const { user, isAuthenticated, username, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +32,16 @@ export const Header: React.FC<HeaderProps> = ({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleBookingClick = () => {
+    if (onOpenBooking) {
+      onOpenBooking();
+    } else if (onBookNow) {
+      onBookNow();
+    } else {
+      window.location.assign(window.sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking');
+    }
+  };
 
   const navLinks = [
     { label: 'Resorts', href: '#resorts' },
@@ -49,6 +64,16 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const handleSignOut = async () => {
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+    await logout();
+    window.location.assign('/guest');
+  };
+
+  const displayName = username || (user?.id ? user.id.replace(/^GUEST-/, '') : 'Guest');
+  const userInitial = displayName.charAt(0).toUpperCase();
+
   return (
     <>
       <header
@@ -61,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo / Wordmark */}
           <a
-            href="#"
+            href="/"
             className="flex flex-col items-start group focus:outline-none"
             id="brand-logo"
           >
@@ -95,34 +120,113 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action Items */}
           <div className="hidden md:flex items-center space-x-4 lg:space-x-5">
-            <button
-              onClick={onOpenMyStay}
-              id="header-mystay-btn"
-              className={`flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] font-medium px-3 py-1.5 rounded-full transition-all ${
-                isScrolled
-                  ? 'text-[#0D242E] hover:bg-[#F5F0EB]'
-                  : 'text-white/90 hover:bg-white/10'
-              }`}
-            >
-              <Compass className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span>My Stay</span>
-            </button>
+            {onOpenMyStay && (
+              <button
+                onClick={onOpenMyStay}
+                id="header-mystay-btn"
+                className={`flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] font-medium px-3 py-1.5 rounded-full transition-all ${
+                  isScrolled
+                    ? 'text-[#0D242E] hover:bg-[#F5F0EB]'
+                    : 'text-white/90 hover:bg-white/10'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>My Stay</span>
+              </button>
+            )}
+
+            {/* Dynamic User Profile or Login Button */}
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  id="header-user-btn"
+                  className={`flex items-center gap-2 text-xs uppercase tracking-[0.12em] font-medium px-3.5 py-1.5 rounded-full transition-all border ${
+                    isScrolled
+                      ? 'bg-white/80 border-[#C5A880]/30 text-[#0D242E] hover:bg-[#F5F0EB]'
+                      : 'bg-white/15 border-white/25 text-white hover:bg-white/25'
+                  }`}
+                >
+                  <span className="w-6 h-6 rounded-full bg-[#C5A880] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    {userInitial}
+                  </span>
+                  <span className="max-w-[100px] truncate font-sans font-semibold">{displayName}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#C5A880]/20 text-[#C5A880] uppercase font-bold">
+                    {user?.role || 'Guest'}
+                  </span>
+                </button>
+
+                {/* User Dropdown Menu */}
+                <AnimatePresence>
+                  {userDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      className="absolute right-0 mt-2 w-56 bg-[#FBF9F5] border border-[#C5A880]/30 rounded-2xl shadow-xl py-2 z-50 text-[#0D242E]"
+                    >
+                      <div className="px-4 py-3 border-b border-[#EFE8DE]">
+                        <p className="text-[11px] uppercase tracking-wider text-[#1C2826]/60 font-semibold">Signed in as</p>
+                        <p className="font-semibold text-sm text-[#0D242E] truncate mt-0.5">{displayName}</p>
+                        <span className="inline-block mt-1 text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#C5A880]/15 text-[#9E8159] font-bold">
+                          {user?.role === 'STAFF' ? 'Staff Member' : 'Verified Guest'}
+                        </span>
+                      </div>
+
+                      {onOpenMyStay && (
+                        <button
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            onOpenMyStay();
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-[#F5F0EB] flex items-center gap-2.5 transition-colors"
+                        >
+                          <Compass className="w-4 h-4 text-[#C5A880]" />
+                          <span>My Stay & Itinerary</span>
+                        </button>
+                      )}
+
+                      {user?.role === 'STAFF' && (
+                        <button
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            window.location.assign('/staff/dashboard');
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-[#F5F0EB] flex items-center gap-2.5 transition-colors"
+                        >
+                          <Shield className="w-4 h-4 text-[#C5A880]" />
+                          <span>Staff Operations Dashboard</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors border-t border-[#EFE8DE] mt-1"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <button
+                onClick={onOpenLogin}
+                id="header-login-btn"
+                className={`flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] font-medium px-3.5 py-1.5 rounded-full transition-all ${
+                  isScrolled
+                    ? 'text-[#0D242E] hover:bg-[#F5F0EB]'
+                    : 'text-white/90 hover:bg-white/10'
+                }`}
+              >
+                <User className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>Login</span>
+              </button>
+            )}
 
             <button
-              onClick={onOpenLogin}
-              id="header-login-btn"
-              className={`flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] font-medium px-3 py-1.5 rounded-full transition-all ${
-                isScrolled
-                  ? 'text-[#0D242E] hover:bg-[#F5F0EB]'
-                  : 'text-white/90 hover:bg-white/10'
-              }`}
-            >
-              <User className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span>Login</span>
-            </button>
-
-            <button
-              onClick={() => window.location.assign(window.sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
+              onClick={handleBookingClick}
               id="header-book-btn"
               className="bg-[#C5A880] hover:bg-[#9E8159] text-white text-xs uppercase tracking-[0.18em] font-semibold px-5 py-2.5 rounded-full shadow-sm hover:shadow transition-all duration-300 flex items-center gap-2 transform active:scale-95"
             >
@@ -131,10 +235,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex items-center space-x-3 xl:hidden">
+          {/* Side Menu Button Toggle - Always Visible */}
+          <div className="flex items-center space-x-3">
             <button
-              onClick={() => window.location.assign(window.sessionStorage.getItem('meridian_access_token') ? '/booking' : '/login?redirect=/booking')}
+              onClick={handleBookingClick}
               className="md:hidden bg-[#C5A880] text-white text-[11px] uppercase tracking-wider font-semibold px-3.5 py-1.5 rounded-full"
             >
               Book
@@ -153,7 +257,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* Mobile Drawer Menu */}
+      {/* Side Drawer Navigation Menu (Accessible on Desktop and Mobile) */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -161,7 +265,7 @@ export const Header: React.FC<HeaderProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'tween', duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-50 bg-[#0D242E] text-white flex flex-col justify-between p-6 sm:p-8 xl:hidden overflow-y-auto"
+            className="fixed inset-0 z-50 bg-[#0D242E] text-white flex flex-col justify-between p-6 sm:p-8 overflow-y-auto max-w-md ml-auto shadow-2xl border-l border-white/10"
           >
             <div>
               {/* Drawer Header */}
@@ -183,6 +287,28 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
 
+              {/* User Session Info Header in Drawer */}
+              {isAuthenticated && (
+                <div className="mt-4 p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-full bg-[#C5A880] text-white flex items-center justify-center font-bold text-sm">
+                      {userInitial}
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold text-white">{displayName}</p>
+                      <p className="text-[10px] text-[#C5A880] uppercase tracking-wider">{user?.role || 'Guest'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 text-white/60 hover:text-red-400 rounded-lg hover:bg-white/5 transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               {/* Drawer Links */}
               <div className="py-6 flex flex-col space-y-4">
                 {navLinks.map((link) => (
@@ -201,32 +327,45 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Drawer Bottom Actions */}
             <div className="pt-6 border-t border-white/10 flex flex-col gap-3.5">
               <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenMyStay();
-                  }}
-                  className="flex items-center justify-center gap-2 border border-white/20 rounded-full py-2.5 text-xs uppercase tracking-wider font-medium text-white hover:bg-white/10 transition-colors"
-                >
-                  <Compass className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>My Stay</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenLogin();
-                  }}
-                  className="flex items-center justify-center gap-2 border border-white/20 rounded-full py-2.5 text-xs uppercase tracking-wider font-medium text-white hover:bg-white/10 transition-colors"
-                >
-                  <User className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Login</span>
-                </button>
+                {onOpenMyStay && (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenMyStay();
+                    }}
+                    className="flex items-center justify-center gap-2 border border-white/20 rounded-full py-2.5 text-xs uppercase tracking-wider font-medium text-white hover:bg-white/10 transition-colors"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>My Stay</span>
+                  </button>
+                )}
+                {isAuthenticated ? (
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center justify-center gap-2 border border-red-500/40 rounded-full py-2.5 text-xs uppercase tracking-wider font-medium text-red-300 hover:bg-red-500/20 transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      if (onOpenLogin) onOpenLogin();
+                      else window.location.assign('/login');
+                    }}
+                    className="flex items-center justify-center gap-2 border border-white/20 rounded-full py-2.5 text-xs uppercase tracking-wider font-medium text-white hover:bg-white/10 transition-colors"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>Login</span>
+                  </button>
+                )}
               </div>
 
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  onOpenBooking();
+                  handleBookingClick();
                 }}
                 className="w-full bg-[#C5A880] hover:bg-[#9E8159] text-white py-3.5 rounded-full text-xs uppercase tracking-[0.2em] font-semibold flex items-center justify-center gap-2 shadow-lg transition-colors"
               >
@@ -244,3 +383,4 @@ export const Header: React.FC<HeaderProps> = ({
     </>
   );
 };
+

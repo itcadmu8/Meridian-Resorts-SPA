@@ -12,6 +12,7 @@ class UserOut(BaseModel):
     id: str
     username: str
     role: str
+    guest_id: str | None = None
     is_active: bool
 
 

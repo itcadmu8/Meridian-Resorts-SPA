@@ -15,7 +15,7 @@ const WELCOME_MESSAGE: DisplayMessage = {
 };
 
 export const ChatWidget: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<DisplayMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
@@ -23,11 +23,34 @@ export const ChatWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Auto-open AI chat if openAi=1 query parameter is in URL (e.g. after login/signup redirect)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('openAi') === '1' || params.get('openAi') === 'true') {
+      setIsOpen(true);
+      // Clean up URL parameter cleanly
+      params.delete('openAi');
+      const newQuery = params.toString();
+      const newPath = window.location.pathname + (newQuery ? `?${newQuery}` : '');
+      window.history.replaceState({}, '', newPath);
+    }
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isOpen, isSending]);
+
+  const handleToggle = () => {
+    if (!isOpen && !isAuthenticated) {
+      const currentPath = window.location.pathname;
+      const redirectUrl = `/login?redirect=${encodeURIComponent(currentPath + '?openAi=1')}`;
+      window.location.assign(redirectUrl);
+      return;
+    }
+    setIsOpen((prev) => !prev);
+  };
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -43,10 +66,31 @@ export const ChatWidget: React.FC = () => {
 
     try {
       const response = await sendChatMessage(trimmed, history, {
-        guest_id: user?.id,
-        guest_name: user?.name || user?.username,
-        guest_email: user?.email || user?.username,
+        guest_id: user?.guest_id || user?.id,
+        guest_name: user?.name || user?.username || 'Guest User',
+        guest_email: user?.email || user?.username || 'guest@meridian.com',
       });
+
+      if (response.reservation) {
+        const res = response.reservation;
+        const bookingObj = {
+          id: res.reservation_id,
+          guestEmail: user?.email || user?.username || 'guest',
+          property: res.property_name,
+          location: res.property_name,
+          checkIn: res.check_in,
+          checkOut: res.check_out,
+          room: { name: res.room_type || 'Suite' },
+          total: 500,
+        };
+        try {
+          localStorage.setItem(`meridian_booking_${res.reservation_id}`, JSON.stringify(bookingObj));
+          localStorage.setItem('meridian_latest_booking', JSON.stringify(bookingObj));
+        } catch {
+          // Ignore storage quota error
+        }
+      }
+
       setMessages((prev) => [
         ...prev,
         {
@@ -75,7 +119,7 @@ export const ChatWidget: React.FC = () => {
       {/* Floating toggle button */}
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={handleToggle}
         aria-label={isOpen ? 'Close concierge chat' : 'Open concierge chat'}
         className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-[#0f766e] text-white shadow-lg hover:bg-[#0d6660] transition-colors flex items-center justify-center"
       >

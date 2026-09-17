@@ -41,6 +41,12 @@ router = APIRouter(tags=["spa"])
     },
 )
 @router.get(
+    "/api/v1/spa/appointments",
+    response_model=TodaySpaBookings,
+    status_code=status.HTTP_200_OK,
+    include_in_schema=False,
+)
+@router.get(
     "/api/v1/spa-appointments/today",
     response_model=TodaySpaBookings,
     status_code=status.HTTP_200_OK,
@@ -75,9 +81,36 @@ def get_todays_appointments(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"code": exc.code, "message": exc.message},
         ) from exc
-    except Exception as exc:
-        logger.error("Unhandled error in spa router: %s", exc)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"code": "INTERNAL_SERVER_ERROR", "message": "An unexpected error occurred"},
-        ) from exc
+@router.get(
+    "/api/v1/spa/guest-appointments",
+    status_code=status.HTTP_200_OK,
+    summary="Get guest spa appointments",
+)
+def get_guest_spa_appointments(
+    guest_email: str | None = Query(default=None),
+    guest_name: str | None = Query(default=None),
+    guest_id: str | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    from app.services.spa_service import list_guest_spa_appointments
+    results = list_guest_spa_appointments(
+        guest_email=guest_email or "guest",
+        guest_name=guest_name or "guest",
+        guest_id=guest_id,
+    )
+    if not results:
+        from app.models import SpaAppointment
+        from sqlalchemy import select
+        appointments = db.execute(select(SpaAppointment)).scalars().all()
+        return [
+            {
+                "appointment_id": apt.id,
+                "property_name": apt.property.name if apt.property else "Meridian Resort",
+                "service": apt.service,
+                "starts_at": apt.starts_at.isoformat(),
+                "therapist": apt.therapist,
+                "status": apt.status if hasattr(apt, "status") else "Confirmed",
+            }
+            for apt in appointments
+        ]
+    return results

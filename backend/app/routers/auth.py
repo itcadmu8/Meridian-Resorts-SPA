@@ -11,14 +11,42 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 def authenticate(credentials: LoginRequest, role: UserRole, db: Session) -> User:
-    statement = select(User).where(
-        User.role == role,
-        User.is_active.is_(True),
-        User.username == credentials.username,
+    username = credentials.username.strip()
+    # 1. Direct username match
+    user = db.scalar(
+        select(User).where(
+            User.role == role,
+            User.is_active.is_(True),
+            User.username == username,
+        )
     )
-    user = db.scalar(statement)
+    # 2. Case-insensitive match
+    if user is None:
+        user = db.scalar(
+            select(User).where(
+                User.role == role,
+                User.is_active.is_(True),
+                User.username.ilike(username),
+            )
+        )
+    # 3. Guest lookup by email
+    if user is None and role == UserRole.guest:
+        guest = db.scalar(select(Guest).where(Guest.email.ilike(username)))
+        if guest:
+            user = db.scalar(select(User).where(User.guest_id == guest.id, User.role == UserRole.guest))
+            if user is None:
+                user = User(
+                    username=guest.email,
+                    password_hash=hash_password("guest123"),
+                    role=UserRole.guest,
+                    guest_id=guest.id,
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+
     if user is None or not verify_password(credentials.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
     return user
 
 

@@ -28,12 +28,27 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
   if (!isOpen) return null;
 
   const resortName = initialParams?.resort || 'Meridian Azure Cove, Maldives';
-  const checkIn = initialParams?.checkIn || '2026-10-15';
-  const checkOut = initialParams?.checkOut || '2026-10-20';
+  let rawCheckIn = initialParams?.checkIn || '2026-10-15';
+  let rawCheckOut = initialParams?.checkOut || '2026-10-20';
+
+  // Guarantee checkIn is chronological before checkOut
+  let checkIn = rawCheckIn;
+  let checkOut = rawCheckOut;
+  if (new Date(rawCheckIn) > new Date(rawCheckOut)) {
+    checkIn = rawCheckOut;
+    checkOut = rawCheckIn;
+  }
+
   const guests = initialParams?.guests || 2;
   const roomName = selectedRoom?.name || 'Overwater Sunset Pool Villa';
   const nightlyRate = selectedRoom?.pricePerNight || 1250;
-  const nights = 5;
+
+  // Calculate actual nights stay between checkIn and checkOut
+  const d1 = new Date(checkIn);
+  const d2 = new Date(checkOut);
+  const diffTime = Math.abs(d2.getTime() - d1.getTime());
+  const nights = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+
   const subtotal = nightlyRate * nights;
   const taxAndService = Math.round(subtotal * 0.16);
   const total = subtotal + taxAndService;

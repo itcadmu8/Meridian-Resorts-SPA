@@ -14,16 +14,27 @@ import {
 
 interface DashboardOverviewProps {
   properties: PropertyCoverData[];
+  summary?: {
+    total_properties?: number;
+    total_arrivals?: number;
+    portfolio_occupancy?: number;
+    total_spa_bookings?: number;
+    total_fb_covers?: number;
+  };
   onNavigateToFb: () => void;
   onSelectProperty: (property: PropertyCoverData) => void;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   properties,
+  summary,
   onNavigateToFb,
   onSelectProperty,
 }) => {
-  const totalCovers = properties.reduce((acc, p) => acc + p.covers, 0);
+  const totalCovers = summary?.total_fb_covers ?? properties.reduce((acc, p) => acc + (p.covers || 0), 0);
+  const totalArrivals = summary?.total_arrivals ?? properties.reduce((acc, p) => acc + ((p as any).arrivals_count || 0), 0);
+  const totalSpa = summary?.total_spa_bookings ?? properties.reduce((acc, p) => acc + ((p as any).spa_bookings_count || 0), 0);
+  const portfolioOcc = summary?.portfolio_occupancy ?? Math.round(properties.reduce((acc, p) => acc + (p.occupancyPercent || 0), 0) / (properties.length || 1));
 
   return (
     <div className="space-y-6">
@@ -61,9 +72,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </span>
             <BedDouble className="w-4 h-4 text-[#176B63]" />
           </div>
-          <div className="text-3xl font-semibold text-[#10201E] mt-2">87.4%</div>
+          <div className="text-3xl font-semibold text-[#10201E] mt-2">{portfolioOcc}%</div>
           <p className="text-xs text-emerald-700 font-medium mt-1 flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" /> +4.2% vs last week
+            <TrendingUp className="w-3 h-3" /> +4.2% vs target
           </p>
         </div>
 
@@ -90,8 +101,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </span>
             <Users className="w-4 h-4 text-[#176B63]" />
           </div>
-          <div className="text-3xl font-semibold text-[#10201E] mt-2">148</div>
-          <p className="text-xs text-[#647572] mt-1">24 VIP Suites arriving today</p>
+          <div className="text-3xl font-semibold text-[#10201E] mt-2">{totalArrivals}</div>
+          <p className="text-xs text-[#647572] mt-1">Confirmed guest arrivals today</p>
         </div>
 
         <div className="bg-white p-5 rounded-[10px] border border-[#D8E3E1] shadow-[0_1px_3px_rgba(23,32,31,0.05)]">
@@ -101,8 +112,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </span>
             <Sparkles className="w-4 h-4 text-[#176B63]" />
           </div>
-          <div className="text-3xl font-semibold text-[#10201E] mt-2">92</div>
-          <p className="text-xs text-[#647572] mt-1">96% therapist utilization</p>
+          <div className="text-3xl font-semibold text-[#10201E] mt-2">{totalSpa}</div>
+          <p className="text-xs text-[#647572] mt-1">Scheduled sessions today</p>
         </div>
       </div>
 

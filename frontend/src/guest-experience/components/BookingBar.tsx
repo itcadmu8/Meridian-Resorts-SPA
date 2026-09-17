@@ -14,12 +14,41 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
   const [guests, setGuests] = useState(2);
   const [rooms, setRooms] = useState(1);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const handleCheckInChange = (newVal: string) => {
+    setCheckIn(newVal);
+    if (!checkOut || newVal >= checkOut) {
+      const nextDate = new Date(newVal);
+      nextDate.setDate(nextDate.getDate() + 5);
+      setCheckOut(nextDate.toISOString().split('T')[0]);
+    }
+  };
+
+  const handleCheckOutChange = (newVal: string) => {
+    if (newVal <= checkIn) {
+      const prevDate = new Date(newVal);
+      prevDate.setDate(prevDate.getDate() - 5);
+      const computedCheckIn = prevDate.toISOString().split('T')[0];
+      setCheckIn(computedCheckIn < todayStr ? todayStr : computedCheckIn);
+    }
+    setCheckOut(newVal);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    let validCheckIn = checkIn;
+    let validCheckOut = checkOut;
+    if (new Date(validCheckIn) >= new Date(validCheckOut)) {
+      const d = new Date(validCheckIn);
+      d.setDate(d.getDate() + 5);
+      validCheckOut = d.toISOString().split('T')[0];
+      setCheckOut(validCheckOut);
+    }
     onSearch({
       resortId: selectedResort,
-      checkIn,
-      checkOut,
+      checkIn: validCheckIn,
+      checkOut: validCheckOut,
       guests,
       rooms
     });
@@ -51,25 +80,34 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
           </div>
 
           {/* Dates */}
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl sm:rounded-full bg-white border border-[#EFE8DE] hover:border-[#C5A880]/50 transition-colors">
-            <Calendar className="w-4 h-4 text-[#C5A880] shrink-0" />
-            <div className="w-full text-left">
-              <label className="block text-[10px] tracking-wider uppercase text-[#1C2826]/60 font-sans font-semibold">
-                Arrival & Departure
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl sm:rounded-full bg-white border border-[#EFE8DE] hover:border-[#C5A880]/50 transition-colors min-w-0">
+            <Calendar className="w-4 h-4 text-[#C5A880] shrink-0 cursor-pointer" onClick={(e) => {
+              const inputs = e.currentTarget.parentElement?.querySelectorAll('input');
+              if (inputs && inputs[0]) inputs[0].showPicker?.();
+            }} />
+            <div className="w-full text-left min-w-0">
+              <label className="block text-[10px] tracking-wider uppercase text-[#1C2826]/60 font-sans font-semibold truncate">
+                Arrival &amp; Departure
               </label>
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#0D242E]">
+              <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#0D242E] min-w-0">
                 <input
                   type="date"
+                  min={todayStr}
                   value={checkIn}
-                  onChange={(e) => setCheckIn(e.target.value)}
-                  className="bg-transparent focus:outline-none cursor-pointer text-xs"
+                  onClick={(e) => e.currentTarget.showPicker?.()}
+                  onChange={(e) => handleCheckInChange(e.target.value)}
+                  className="bg-transparent focus:outline-none cursor-pointer text-xs font-semibold text-[#0D242E] w-[92px] min-w-0 p-0 border-0 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
+                  aria-label="Check-in date"
                 />
-                <span className="text-[#C5A880]">—</span>
+                <span className="text-[#C5A880] shrink-0">—</span>
                 <input
                   type="date"
+                  min={checkIn || todayStr}
                   value={checkOut}
-                  onChange={(e) => setCheckOut(e.target.value)}
-                  className="bg-transparent focus:outline-none cursor-pointer text-xs"
+                  onClick={(e) => e.currentTarget.showPicker?.()}
+                  onChange={(e) => handleCheckOutChange(e.target.value)}
+                  className="bg-transparent focus:outline-none cursor-pointer text-xs font-semibold text-[#0D242E] w-[92px] min-w-0 p-0 border-0 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
+                  aria-label="Check-out date"
                 />
               </div>
             </div>
@@ -80,7 +118,7 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
             <Users className="w-4 h-4 text-[#C5A880] shrink-0" />
             <div className="w-full text-left">
               <label className="block text-[10px] tracking-wider uppercase text-[#1C2826]/60 font-sans font-semibold">
-                Guests & Sanctuaries
+                Guests &amp; Sanctuaries
               </label>
               <div className="flex items-center gap-3 text-xs sm:text-sm font-medium text-[#0D242E]">
                 <select
@@ -113,7 +151,7 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
             <button
               type="submit"
               id="booking-bar-submit-btn"
-              className="w-full bg-[#0D242E] hover:bg-[#133845] text-[#FBF9F5] hover:text-[#C5A880] py-3.5 px-6 rounded-xl sm:rounded-full text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform active:scale-95"
+              className="w-full bg-[#0D242E] hover:bg-[#133845] text-[#FBF9F5] hover:text-[#C5A880] py-3.5 px-6 rounded-xl sm:rounded-full text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform active:scale-95 cursor-pointer"
             >
               <Search className="w-3.5 h-3.5 text-[#C5A880]" />
               <span>Check Availability</span>

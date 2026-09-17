@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Compass, User, Briefcase, Lock, ArrowRight, Eye, EyeOff, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, Compass, User, Briefcase, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 interface LoginExperienceProps {
   isOpen: boolean;
@@ -10,7 +11,6 @@ interface LoginExperienceProps {
   onStaffLoginSuccess?: (employeeId: string, role: string) => void;
   onGuestCredentials?: (username: string, password: string) => Promise<void>;
   onStaffCredentials?: (username: string, password: string) => Promise<void>;
-  onCreateGuestAccount?: () => void;
 }
 
 export const LoginExperience: React.FC<LoginExperienceProps> = ({
@@ -21,8 +21,8 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
   onStaffLoginSuccess,
   onGuestCredentials,
   onStaffCredentials,
-  onCreateGuestAccount
 }) => {
+  const { signIn } = useAuth();
   const [activeTab, setActiveTab] = useState<'guest' | 'staff'>('guest');
 
   // Guest credentials
@@ -34,43 +34,58 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
   const [staffUsername, setStaffUsername] = useState('');
   const [staffPassword, setStaffPassword] = useState('');
   const [showStaffPassword, setShowStaffPassword] = useState(false);
-
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
   const handleGuestSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (!guestUsername.trim() || !guestPassword.trim()) return;
 
     setIsLoading(true);
-    Promise.resolve(onGuestCredentials?.(guestUsername, guestPassword) || undefined)
+    const authPromise = onGuestCredentials
+      ? onGuestCredentials(guestUsername, guestPassword)
+      : signIn({ username: guestUsername, password: guestPassword, role: 'GUEST' });
+
+    Promise.resolve(authPromise)
       .then(() => {
         if (onLoginSuccess) onLoginSuccess(guestUsername);
         if (onGuestLoginSuccess) onGuestLoginSuccess('MER-89241', guestUsername);
         onClose();
       })
-      .catch(() => undefined)
+      .catch((err: any) => {
+        setError(err?.message || err?.detail || 'Invalid username or password. Please try again.');
+      })
       .finally(() => setIsLoading(false));
   };
 
   const handleStaffSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (!staffUsername.trim() || !staffPassword.trim()) return;
 
     setIsLoading(true);
-    Promise.resolve(onStaffCredentials?.(staffUsername, staffPassword) || undefined)
+    const authPromise = onStaffCredentials
+      ? onStaffCredentials(staffUsername, staffPassword)
+      : signIn({ username: staffUsername, password: staffPassword, role: 'STAFF' });
+
+    Promise.resolve(authPromise)
       .then(() => {
         if (onLoginSuccess) onLoginSuccess(staffUsername);
         if (onStaffLoginSuccess) onStaffLoginSuccess(staffUsername, 'Butler & Guest Experience');
+        if (!onStaffCredentials) window.location.assign('/staff/dashboard');
         onClose();
       })
-      .catch(() => undefined)
+      .catch((err: any) => {
+        setError(err?.message || err?.detail || 'Invalid staff credentials. Please check your Staff ID and password.');
+      })
       .finally(() => setIsLoading(false));
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/70 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/40 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -99,12 +114,11 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
         <div className="grid grid-cols-2 border-b border-[#EFE8DE] bg-[#F5F0EB]/90">
           <button
             type="button"
-            onClick={() => setActiveTab('guest')}
-            className={`py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-[0.14em] font-semibold transition-all ${
-              activeTab === 'guest'
+            onClick={() => { setActiveTab('guest'); setError(''); }}
+            className={`py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-[0.14em] font-semibold transition-all ${activeTab === 'guest'
                 ? 'bg-[#FBF9F5] text-[#0D242E] border-b-2 border-[#C5A880]'
                 : 'text-[#1C2826]/60 hover:text-[#0D242E]'
-            }`}
+              }`}
           >
             <User className="w-4 h-4 text-[#C5A880]" />
             <span>Guest Login</span>
@@ -112,12 +126,11 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
 
           <button
             type="button"
-            onClick={() => setActiveTab('staff')}
-            className={`py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-[0.14em] font-semibold transition-all ${
-              activeTab === 'staff'
+            onClick={() => { setActiveTab('staff'); setError(''); }}
+            className={`py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-[0.14em] font-semibold transition-all ${activeTab === 'staff'
                 ? 'bg-[#FBF9F5] text-[#0D242E] border-b-2 border-[#C5A880]'
                 : 'text-[#1C2826]/60 hover:text-[#0D242E]'
-            }`}
+              }`}
           >
             <Briefcase className="w-4 h-4 text-[#C5A880]" />
             <span>Staff Login</span>
@@ -126,6 +139,12 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
 
         {/* Form Body */}
         <div className="p-6 sm:p-8">
+          {error && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+              <span className="font-semibold">Error:</span> {error}
+            </div>
+          )}
+
           {activeTab === 'guest' ? (
             /* Guest Login Form */
             <form onSubmit={handleGuestSubmit} className="space-y-4">
@@ -207,12 +226,6 @@ export const LoginExperience: React.FC<LoginExperienceProps> = ({
                   )}
                 </button>
               </div>
-              <p className="mt-4 text-center text-xs text-[#1C2826]/70 font-sans">
-                Don&apos;t have a Meridian account?{' '}
-                <button type="button" className="font-semibold text-[#9E8159] hover:underline" onClick={onCreateGuestAccount}>
-                  Create an account
-                </button>
-              </p>
             </form>
           ) : (
             /* Staff Login Form */

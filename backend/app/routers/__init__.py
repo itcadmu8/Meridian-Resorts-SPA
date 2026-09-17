@@ -1,0 +1,31 @@
+from app.routers import (
+    ai,
+    arrivals,
+    auth,
+    availability,
+    dashboard,
+    folios,
+    guests,
+    inventory,
+    offers,
+    orders,
+    properties,
+    reservations,
+    spa,
+)
+
+__all__ = [
+    "ai",
+    "arrivals",
+    "auth",
+    "availability",
+    "dashboard",
+    "folios",
+    "guests",
+    "inventory",
+    "offers",
+    "orders",
+    "properties",
+    "reservations",
+    "spa",
+]

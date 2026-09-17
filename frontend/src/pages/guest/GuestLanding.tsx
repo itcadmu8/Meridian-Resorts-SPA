@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChatWidget } from '../../components/ChatWidget';
 
 const properties = [
-  { name: 'Azure Coast', location: 'Mombasa, Kenya', image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=85', description: 'A barefoot-luxury beachfront retreat shaped by warm tides, private cabanas, and slow coastal mornings.', amenities: ['Private beach', 'Sunset dhow cruises', 'Ocean spa'] },
+  { name: 'Azure Coast', location: 'Mombasa, Kenya', image: 'C', description: 'A barefoot-luxury beachfront retreat shaped by warm tides, private cabanas, and slow coastal mornings.', amenities: ['Private beach', 'Sunset dhow cruises', 'Ocean spa'] },
   { name: 'Highland Retreat', location: 'Nanyuki, Kenya', image: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=85', description: 'Forest-view lodges beneath Mount Kenya, built for crisp air, quiet walks, and unhurried afternoons.', amenities: ['Forest lodges', 'Mountain views', 'Fireplace dining'] },
   { name: 'City Gardens', location: 'Nairobi, Kenya', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=85', description: 'A rooftop pool, skyline dining, and a calm garden address in the heart of the capital.', amenities: ['Rooftop pool', 'Skyline dining', 'Urban spa'] },
 ];

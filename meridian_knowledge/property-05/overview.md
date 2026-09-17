@@ -1,1 +1,2 @@
-# Property 05 Overview
+# Meridian Garden Spa - Overview
+Holistic wellness retreat set inside lush botanical gardens, featuring mineral hydrotherapy pools, organic farm-to-table cuisine, chakra alignment rituals, and natural garden suites.

@@ -141,3 +141,113 @@ def create_spa_appointment(
         db.rollback()
         logger.error("Database error while creating spa appointment: %s", exc)
         raise SpaDatabaseError(f"Database error while creating spa appointment: {exc!s}") from exc
+
+
+def book_guest_spa_appointment(
+    property_name: str,
+    service: str,
+    appointment_date: str,
+    appointment_time: str = "14:00",
+    therapist: str | None = None,
+    guest_email: str | None = None,
+    guest_name: str | None = None,
+    guest_id: str | None = None,
+) -> dict:
+    """Book a new spa appointment for a guest."""
+    from uuid import uuid4
+    from sqlalchemy import select
+    from app.database import SessionLocal
+
+    with SessionLocal() as session:
+        prop = session.execute(
+            select(models.Property).where(models.Property.name.ilike(f"%{property_name}%"))
+        ).scalars().first()
+        if not prop:
+            prop = session.execute(select(models.Property)).scalars().first()
+
+        property_id = prop.id if prop else "P-001"
+        prop_name = prop.name if prop else "Meridian Grand Resort"
+
+        try:
+            time_parts = appointment_time.replace(" ", "").lower()
+            if "pm" in time_parts or "am" in time_parts:
+                time_obj = datetime.strptime(appointment_time.strip(), "%I:%M %p").time()
+            elif ":" in time_parts:
+                time_obj = datetime.strptime(appointment_time.strip(), "%H:%M").time()
+            else:
+                time_obj = time(14, 0)
+            date_obj = date.fromisoformat(appointment_date)
+            starts_at = datetime.combine(date_obj, time_obj)
+        except Exception:
+            starts_at = datetime.now(UTC) + timedelta(days=1)
+
+        apt_id = f"SPA-{uuid4().hex[:6].upper()}"
+        therapist_name = therapist or "Meridian Spa Specialist"
+
+        apt = models.SpaAppointment(
+            id=apt_id,
+            property_id=property_id,
+            service=service,
+            starts_at=starts_at,
+            therapist=therapist_name,
+            status=models.SpaAppointmentStatus.confirmed,
+            guest_id=guest_id,
+            guest_email=guest_email,
+            guest_name=guest_name,
+        )
+        session.add(apt)
+        session.commit()
+
+        return {
+            "appointment_id": apt_id,
+            "property_name": prop_name,
+            "service": service,
+            "date": starts_at.strftime("%Y-%m-%d"),
+            "time": starts_at.strftime("%H:%M"),
+            "therapist": therapist_name,
+            "status": "Confirmed",
+        }
+
+
+def list_guest_spa_appointments(
+    guest_email: str | None = None,
+    guest_name: str | None = None,
+    guest_id: str | None = None,
+) -> list[dict]:
+    """Retrieve existing spa appointments for a specific guest."""
+    from sqlalchemy import select, or_
+    from app.database import SessionLocal
+
+    if not guest_email and not guest_name and not guest_id:
+        return []
+
+    conditions = []
+    if guest_id:
+        conditions.append(models.SpaAppointment.guest_id == guest_id)
+    if guest_email:
+        conditions.append(models.SpaAppointment.guest_email.ilike(guest_email))
+        conditions.append(models.SpaAppointment.guest_email.ilike(f"%{guest_email}%"))
+    if guest_name:
+        conditions.append(models.SpaAppointment.guest_name.ilike(f"%{guest_name}%"))
+
+    with SessionLocal() as session:
+        stmt = (
+            select(models.SpaAppointment, models.Property)
+            .join(models.Property, models.Property.id == models.SpaAppointment.property_id)
+            .where(or_(*conditions))
+            .order_by(models.SpaAppointment.starts_at.desc())
+        )
+        rows = session.execute(stmt).all()
+
+        return [
+            {
+                "appointment_id": apt.id,
+                "property_name": prop.name,
+                "service": apt.service,
+                "starts_at": apt.starts_at.isoformat(),
+                "therapist": apt.therapist,
+                "status": apt.status if hasattr(apt, "status") else "Confirmed",
+            }
+            for apt, prop in rows
+        ]
+

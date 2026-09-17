@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { RESORTS } from '../../guest-experience/data/resorts';
 import { SPA_EXPERIENCES } from '../../guest-experience/data/spa';
+import client from '../../api/client';
 
 const rooms = [
   { id: 'ocean-room', name: 'Oceanfront Room', description: 'King bed, ocean view, private balcony.', occupancy: 2, price: 25000, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=80' },
@@ -40,7 +41,31 @@ export default function BookingPage({ onNavigate }: { onNavigate: (path: string)
 
   const togglePreference = (item: string) => setPreferences((current) => current.includes(item) ? current.filter((value) => value !== item) : [...current, item]);
   const next = () => { setError(''); if (step === 0 && (!checkIn || !checkOut || nights < 1)) return setError('Choose a valid stay with checkout after check-in.'); if (step === 1 && !roomId) return setError('Select a room to continue.'); setStep((current) => Math.min(4, current + 1)); };
-  const confirm = () => { const id = `MRD-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 89999)}`; const booking = { id, guestEmail: JSON.parse(sessionStorage.getItem('meridian_user') || '{}').username || 'guest', property: property.name, location: property.location, checkIn, checkOut, nights, adults, children, room, spa, spaDate, spaTime, preferences, notes, total }; localStorage.setItem(`meridian_booking_${id}`, JSON.stringify(booking)); localStorage.setItem('meridian_latest_booking', JSON.stringify(booking)); onNavigate(`/booking/confirmation/${id}`); };
+  const confirm = async () => {
+    const id = `MRD-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 89999)}`;
+    const booking = { id, guestEmail: JSON.parse(sessionStorage.getItem('meridian_user') || '{}').username || 'guest', property: property.name, location: property.location, checkIn, checkOut, nights, adults, children, room, spa, spaDate, spaTime, preferences, notes, total };
+    localStorage.setItem(`meridian_booking_${id}`, JSON.stringify(booking));
+    localStorage.setItem('meridian_latest_booking', JSON.stringify(booking));
+    
+    try {
+      const resId = `R-${Math.floor(100000 + Math.random() * 899999)}`;
+      await client.post('/reservations', {
+        id: resId,
+        guest_id: 'G-1001',
+        property_id: propertyId,
+        check_in: checkIn,
+        check_out: checkOut,
+        adults: adults,
+        children: children,
+        room_type: room.name,
+        special_preference: preferences.join(', ') || notes || 'None'
+      });
+    } catch (err) {
+      console.warn('Backend reservation sync skipped:', err);
+    }
+
+    onNavigate(`/booking/confirmation/${id}`);
+  };
 
   return <main className="booking-page"><header className="booking-page-header"><button type="button" onClick={() => onNavigate('/guest')}>MERIDIAN <small>RESORTS &amp; SPAS</small></button><span>Plan Your Meridian Escape</span></header><div className="booking-page-inner"><div className="booking-intro"><p>Reservation planning</p><h1>Plan Your Meridian Escape</h1><span>Choose your destination, stay, experiences and preferences. We&apos;ll take care of the rest.</span></div><div className="booking-progress">{steps.map((label, index) => <div className={index <= step ? 'active' : ''} key={label}><i>{index < step ? <Check size={14} /> : index + 1}</i><span>{label}</span></div>)}</div><section className="booking-card">
     {step === 0 && <div className="booking-step"><h2>Choose your stay</h2><div className="booking-form-grid"><label>Property<select value={propertyId} onChange={(e) => setPropertyId(e.target.value)}>{RESORTS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><small>{property.location}</small></label><label>Check-in<input min={today} type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} /></label><label>Check-out<input min={checkIn} type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} /></label></div><div className="guest-steppers"><Stepper label="Adults" value={adults} min={1} onChange={setAdults} /><Stepper label="Children" value={children} min={0} onChange={setChildren} /></div><div className="night-summary">{nights} nights · {adults} adults · {children} children</div></div>}
