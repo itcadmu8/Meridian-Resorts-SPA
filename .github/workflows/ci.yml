@@ -1,0 +1,147 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - pre-production
+
+# Cancel in-progress CI runs for the same branch/PR when a new commit is pushed
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-ci:
+    name: Backend Lint & Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install uv (Python Package Manager)
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: "backend/uv.lock"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install Backend Dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Run Ruff Linter & Code Quality
+        run: uv run ruff check app tests
+
+      - name: Run Pytest Test Suite
+        env:
+          TESTING: "true"
+        run: uv run pytest -v --tb=short
+
+  frontend-ci:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Type Checking & Lint
+        run: npm run lint
+
+      - name: Run Production Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ""
+
+  docker-ci:
+    name: Docker Build & Smoke Test
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          load: true
+          tags: meridian-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Frontend Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          load: true
+          tags: meridian-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify Application Startup with Docker Compose
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: meridian
+          DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/meridian
+          MONGO_URL: mongodb://mongo:27017
+          MONGO_DB_NAME: Meridian-Resorts
+          SEED_ON_STARTUP: "true"
+          OPENAI_API_KEY: "mock-test-key"
+          VITE_API_BASE_URL: "http://localhost:8000"
+        run: |
+          docker compose up -d --build
+          echo "Waiting for services to initialize..."
+          
+          # Poll backend health check endpoint up to 60 seconds
+          for i in {1..12}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Backend health check succeeded with status 200 OK!"
+              break
+            fi
+            echo "Attempt $i: Backend status is $STATUS, retrying in 5s..."
+            sleep 5
+          done
+
+          if [ "$STATUS" != "200" ]; then
+            echo "Error: Backend failed to pass health check."
+            docker compose logs
+            docker compose down -v
+            exit 1
+          fi
+
+          echo "Tearing down test containers..."
+          docker compose down -v

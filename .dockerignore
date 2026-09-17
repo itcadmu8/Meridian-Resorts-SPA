@@ -1,0 +1,21 @@
+# Root .dockerignore
+.git
+.gitignore
+.github
+.vscode
+.venv
+node_modules
+dist
+build
+*.pyc
+__pycache__
+.pytest_cache
+.coverage
+htmlcov
+.env
+.env.*
+!.env.example
+*.log
+scratch
+automation
+meridian_knowledge
